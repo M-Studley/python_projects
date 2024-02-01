@@ -12,9 +12,10 @@ Thank you for reading this file and feel free to reach out to me at anytime here
 
 ## Project List
 
-Quiz Game
-Number Guesser
-Rock, Paper, Scissors
-Zanzibar (Dice Game)
-Hangman
-Blackjack
+### Games
+1. Quiz Game
+2. Number Guesser Game
+3. Rock, Paper, Scissors Game
+4. Zanzibar Dice Game
+5. Hangman Game
+6. Blackjack Game (CURRENT)
