@@ -13,7 +13,8 @@ Thank you for reading this file and feel free to reach out to me at anytime here
 ## Project List
 
 ### Games
-1. Quiz Game
+
+1. Quiz Game (just deleted by accident while figuring out how to unstage something in Git)
 2. Number Guesser Game
 3. Rock, Paper, Scissors Game
 4. Zanzibar Dice Game
