@@ -10,7 +10,7 @@ for player in bj.players:
 for player in bj.players:
     print("im a player:", player)
     for hands in player.hands:
-        bj.evaluate_hand(hands)
+        bj.evaluate_hand(player)
         print("Im a card:", hands)
         print("Im the value of a card:", hands.value)
 
