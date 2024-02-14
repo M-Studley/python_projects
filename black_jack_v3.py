@@ -1,47 +1,6 @@
 import random
 
 
-# ask user for number of players.  generates a dictionary with the number of players and a dealer at the end.
-# each player will have a balance and bet set to 0 and hand set to an empty list.
-def player_generator() -> dict:
-    max_players = 6
-    _players = {}
-    while True:
-        user_input = input("Please enter the amount of players from 1 - 6: ").strip().lower()
-        if user_input.isnumeric() and int(user_input) in range(max_players):
-            player_amount = int(user_input)
-            break
-        else:
-            print("Not a valid amount...")
-
-    for player_number in range(1, player_amount + 1):
-        _players[f"player {player_number}"] = {'balance': 0, 'bet': 0, 'hand': []}
-
-    _players['dealer'] = {'hand': [], 'soft': False}
-    return _players
-
-
-# accepts a deposit amount from a single player.  this will be added to the players balance.
-def deposit(single_player=None):
-    # make a copy of players
-    _players = players
-    # if they want a specific player, change our copy to just the one player
-    if single_player:
-        _players = [single_player]
-    # _players is either a copy of players, or it's a single player now
-    # note this is just for the iteration!
-    for active_player in _players:
-        if active_player == 'dealer':
-            continue
-        # from here on we're still using the real players{}
-        while players[active_player]['balance'] == 0:
-            user_input = input(f"Enter deposit amount for {active_player.upper()} (minimum of 1000): ")
-            if user_input.isnumeric() and int(user_input) >= 1000:
-                players[active_player]['balance'] += int(user_input)
-            else:
-                print("Not a valid amount...")
-
-
 # iterating through the card values and suits to create a deck of 52 cards ace to king for all 4 suits.
 def generate_deck() -> list:
     _deck = []
@@ -71,6 +30,47 @@ def generate_shoe() -> list:
 
     random.shuffle(_shoe)
     return _shoe
+
+
+# ask user for number of players.  generates a dictionary with the number of players and a dealer at the end.
+# each player will have a balance and bet set to 0 and hand set to an empty list.
+def player_generator() -> dict:
+    max_players = 6
+    _players = {}
+    while True:
+        user_input = input("Please enter the amount of players from 1 - 6: ").strip().lower()
+        if user_input.isnumeric() and int(user_input) in range(max_players):
+            player_amount = int(user_input)
+            break
+        else:
+            print("Not a valid amount...")
+
+    for player_number in range(1, player_amount + 1):
+        _players[f"player {player_number}"] = {'balance': 0, 'bet': 0, 'hands': {}}
+
+    _players['dealer'] = {'hands': {}, 'soft': False}
+    return _players
+
+
+# accepts a deposit amount from a single player.  this will be added to the players balance.
+def deposit(single_player=None):
+    # make a copy of players
+    _players = players
+    # if they want a specific player, change our copy to just the one player
+    if single_player:
+        _players = [single_player]
+    # _players is either a copy of players, or it's a single player now
+    # note this is just for the iteration!
+    for active_player in _players:
+        if active_player == 'dealer':
+            continue
+        # from here on we're still using the real players{}
+        while players[active_player]['balance'] == 0:
+            user_input = input(f"Enter deposit amount for {active_player.upper()} (minimum of 1000): ")
+            if user_input.isnumeric() and int(user_input) >= 1000:
+                players[active_player]['balance'] += int(user_input)
+            else:
+                print("Not a valid amount...")
 
 
 # this is used to add to their balance if the player does not have enough.  this will only be asked only for...
@@ -107,9 +107,10 @@ def get_bet_amount() -> None:
 
 # for all players, including the dealer, will receive two cards to begin the game.
 def starting_deal() -> None:
-    for _ in range(1, 3):
+    for _ in range(3):
         for active_player in players:
-            players[active_player]['hand'].append(shoe.pop())
+            # players[active_player]['hands'].append(shoe.pop())
+            players[active_player]['hands'].update({'hand 1': [shoe.pop(), shoe.pop()]})
 
 
 # this is a helper function to sort the hand and place aces at the end of the players hand list[]...
@@ -146,29 +147,6 @@ def get_hand_value(hand, player_list) -> int:
     return hand_value
 
 
-# dealer logic - hit on soft 17 or below hard 17.
-def dealer_turn(player_list) -> None:
-    dealer_finish = False
-    dealer_hand = player_list['dealer']['hand']
-    dealer_hand_value = get_hand_value(hand_sorter(dealer_hand), player_list)
-    while not dealer_finish:
-        print(f"Dealers cards are: {dealer_hand}\n"
-              f"Hand Value: {dealer_hand_value}\n")
-        if dealer_hand_value < 17 or player_list['dealer']['soft'] and dealer_hand_value == 17:
-            print(f"The dealer will hit...")
-            new_card = [shoe.pop()]
-            dealer_hand += new_card
-            hand_sorter(dealer_hand)
-            dealer_hand_value = get_hand_value(dealer_hand, player_list)
-            print(f"Dealers new card: {new_card[0]}")
-        elif 17 <= dealer_hand_value <= 21:
-            print(f"The dealer has {dealer_hand_value} and will stay.")
-            dealer_finish = True
-        else:
-            print("The Dealer busted!")
-            dealer_finish = True
-
-
 # determines if the opening hand of the player vs dealer results in a push (21 & 21), dealer BJ, or player BJ.
 # This will return a bool. True to stop play or False to continue play.
 def check_for_21(player_list, active_player, dealer_cards, sorted_player_hand, bet_amount) -> bool:
@@ -193,29 +171,23 @@ def check_for_21(player_list, active_player, dealer_cards, sorted_player_hand, b
     return False
 
 
-# determines if the player will quit the game or continue.
-def play_again() -> None:
-    valid_input = ''
-    while valid_input not in ['y', 'n']:
-        user_input = input("\nWould you like to play another hand [y/n]? ").strip().lower()
-        if user_input in ['y', 'n']:
-            valid_input = user_input
-        else:
-            print("Not a valid input...")
-    if valid_input not in ['', 'y']:
-        quit()
-    else:
-        print("\n"*8)
-        print("*" * 88)
-        print("\n"*8)
+# TODO: finish the player turn with the split hands by looping through hands.  YOUR ALMOST THERE MICHAEL!
+def split_hand(player_list, active_player):
+    hands = player_list[player]['hands']
+    popped_card = player_list[player]['hands']['hand 1'].pop()
+    hand_counter = 2
+    player_list[active_player]['hands'].update({f'hand {hand_counter}': popped_card})
+    hand_counter += 1
+    for hand in hands:
+        print("hand in hands: ", hand)
 
 
 # this will use the check for 21 function if it returns true this func will return the sorted players hand to exit.
 # if check for 21 is False, we ask the player if they will stay, hit or double.
 # this will continue until the player either busts, hits 21 or chooses to stay.
 def player_choices(player_list, active_player) -> list:
-    dealer_hand = player_list['dealer']['hand']
-    sorted_player_hand = hand_sorter(player_list[active_player]['hand'])
+    dealer_hand = player_list['dealer']['hands']['hand 1']
+    sorted_player_hand = hand_sorter(player_list[active_player]['hands']['hand 1'])
     player_bet = player_list[active_player]['bet']
 
     if check_for_21(player_list, active_player, dealer_hand, sorted_player_hand, player_bet):
@@ -226,8 +198,8 @@ def player_choices(player_list, active_player) -> list:
     while get_hand_value(sorted_player_hand, player_list) < 21:
         print(f"{active_player} cards: {sorted_player_hand}\n"
               f"{active_player} total: {get_hand_value(sorted_player_hand, player_list)}\n")
-        user_input = input(f"{active_player}: Stay[0] Hit[1] Double[2] ").strip()
-        if user_input.isnumeric() and int(user_input) in range(3):
+        user_input = input(f"{active_player}: Stay[0] Hit[1] Double[2] Split[3]").strip()
+        if user_input.isnumeric() and int(user_input) in range(4):
             if int(user_input) == 1:
                 new_card = [shoe.pop()]
                 sorted_player_hand += new_card
@@ -249,21 +221,79 @@ def player_choices(player_list, active_player) -> list:
                 else:
                     print("You do no have enough chips to double...")
                     continue
+            elif int(user_input) == 3:
+                # ******************
+                print("player handS", player_list[player]['hands'])
+                for card in player_list[active_player]['hands']['hand 1']:
+                    print("card: ", card)
+                split_hand(player_list, active_player)
+                print(player_list[player]['hands'])
             else:
                 print(f"{active_player} stays with {get_hand_value(sorted_player_hand, player_list)}\n")
-                print("*"*88)
+                print("*" * 88)
                 print()
                 break
         else:
             print("Not a valid input...")
 
+        if get_hand_value(sorted_player_hand, players) >= 22:
+            print(f"You busted!\n")
+            print("*" * 88)
+            print()
+            players[player].update({'bust': True})
+        elif get_hand_value(sorted_player_hand, players) == 21:
+            print("You have 21\n")
+            print("*" * 88)
+            print()
+            players[player].update({'player_21': True})
+
     return sorted_player_hand
+
+
+# dealer logic - hit on soft 17 or below hard 17.
+def dealer_turn(player_list) -> None:
+    dealer_finish = False
+    dealer_hand = player_list['dealer']['hands']['hand 1']
+    dealer_hand_value = get_hand_value(hand_sorter(dealer_hand), player_list)
+    while not dealer_finish:
+        print(f"Dealers cards are: {dealer_hand}\n"
+              f"Hand Value: {dealer_hand_value}\n")
+        if dealer_hand_value < 17 or player_list['dealer']['soft'] and dealer_hand_value == 17:
+            print(f"The dealer will hit...")
+            new_card = [shoe.pop()]
+            dealer_hand += new_card
+            hand_sorter(dealer_hand)
+            dealer_hand_value = get_hand_value(dealer_hand, player_list)
+            print(f"Dealers new card: {new_card[0]}")
+        elif 17 <= dealer_hand_value <= 21:
+            print(f"The dealer has {dealer_hand_value} and will stay.")
+            dealer_finish = True
+        else:
+            print("The Dealer busted!")
+            dealer_finish = True
+
+
+# determines if the player will quit the game or continue.
+def play_again() -> None:
+    valid_input = ''
+    while valid_input not in ['y', 'n']:
+        user_input = input("\nWould you like to play another hand [y/n]? ").strip().lower()
+        if user_input in ['y', 'n']:
+            valid_input = user_input
+        else:
+            print("Not a valid input...")
+    if valid_input not in ['', 'y']:
+        quit()
+    else:
+        print("\n" * 8)
+        print("*" * 88)
+        print("\n" * 8)
 
 
 # determines who won, handles bets and balances.
 def end_of_round_results(player_list, active_player) -> None:
-    dealer_hand_value = get_hand_value(player_list['dealer']['hand'], player_list)
-    player_hand_value = get_hand_value(player_list[active_player]['hand'], player_list)
+    dealer_hand_value = get_hand_value(player_list['dealer']['hands']['hand 1'], player_list)
+    player_hand_value = get_hand_value(player_list[active_player]['hands']['hand 1'], player_list)
 
     print(f"\n{active_player} has {player_hand_value}\n"
           f"The dealer has {dealer_hand_value}")
@@ -311,24 +341,11 @@ while True:
         # allows player to choose their plays and returns their sorted hand.
         player_hand_sorted = player_choices(players, player)
 
-        # this is for printing end results
-        if get_hand_value(player_hand_sorted, players) >= 22:
-            print(f"You busted!\n")
-            print("*" * 88)
-            print()
-            players[player].update({'bust': True})
-        elif get_hand_value(player_hand_sorted, players) == 21:
-            print("You have 21\n")
-            print("*" * 88)
-            print()
-            players[player].update({'player_21': True})
-
     # if bust, bj, bj_push or dealer_21 are false the dealer will play their turn for single player game
     if len(players) == 2:
         player1_conditions = ('bust' not in players['player 1'] and
                               'bj' not in players['player 1'] and
                               'bj_push' not in players['player 1'])
-
         dealer_condition = 'dealer_21' not in players['dealer']
 
         if player1_conditions and dealer_condition:
@@ -345,8 +362,8 @@ while True:
 
         end_of_round_results(players, player)
         # resetting the players information and carrying over their balance at end of round.
-        players[player] = players[player] = {'balance': players[player]['balance'], 'hand': [], 'bet': 0}
+        players[player] = {'balance': players[player]['balance'], 'bet': 0, 'hands': {}}
     # resetting the dealers information at the end of the round.
-    players['dealer'] = {'hand': [], 'soft': False}
-
+    players['dealer'] = {'hands': {}, 'soft': False}
+    print(players)
     play_again()
