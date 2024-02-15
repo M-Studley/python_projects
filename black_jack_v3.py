@@ -53,7 +53,7 @@ def player_generator() -> dict:
 
 
 # accepts a deposit amount from a single player.  this will be added to the players balance.
-def deposit(single_player=None):
+def deposit(single_player=None) -> None:
     # make a copy of players
     _players = players
     # if they want a specific player, change our copy to just the one player
@@ -76,12 +76,13 @@ def deposit(single_player=None):
 # this is used to add to their balance if the player does not have enough.  this will only be asked only for...
 # the initial bet and not when doubling.
 def take_deposits(active_player) -> None:
-    make_deposit = None
-    while make_deposit is None:
-        user_input = input("You do not have enough in your balance to play.  Would you like to add more [y/n]? ")
+    make_deposit = ''
+    while len(make_deposit) == 0:
+        user_input = input("You do not have enough in your balance to play.  "
+                           "Would you like to add more [y/n]? ").strip().lower()
         if user_input in ['y', 'n']:
-            make_deposit = user_input == 'y'
-    if make_deposit:
+            make_deposit = user_input
+    if make_deposit == 'y':
         deposit(active_player)
 
 
@@ -107,10 +108,8 @@ def get_bet_amount() -> None:
 
 # for all players, including the dealer, will receive two cards to begin the game.
 def starting_deal() -> None:
-    for _ in range(3):
-        for active_player in players:
-            # players[active_player]['hands'].append(shoe.pop())
-            players[active_player]['hands'].update({'hand 1': [shoe.pop(), shoe.pop()]})
+    for active_player in players:
+        players[active_player]['hands'].update({'hand 1': [shoe.pop(), shoe.pop()]})
 
 
 # this is a helper function to sort the hand and place aces at the end of the players hand list[]...
@@ -171,7 +170,6 @@ def check_for_21(player_list, active_player, dealer_cards, sorted_player_hand, b
     return False
 
 
-# TODO: finish the player turn with the split hands by looping through hands.  YOUR ALMOST THERE MICHAEL!
 def split_hand(player_list, active_player):
     hands = player_list[player]['hands']
     popped_card = player_list[player]['hands']['hand 1'].pop()
@@ -324,11 +322,10 @@ def end_of_round_results(player_list, active_player) -> None:
 # remains the same for as long as the game is played
 shoe = generate_shoe()
 players = player_generator()
-
+deposit()
 # The game is played below as long as the user does not quit when asked.
 while True:
-    # gets players deposits, bet amounts and deals the opening hand.
-    deposit()
+    # gets bet amounts and deals the opening hand.
     get_bet_amount()
     starting_deal()
     print()
@@ -365,5 +362,4 @@ while True:
         players[player] = {'balance': players[player]['balance'], 'bet': 0, 'hands': {}}
     # resetting the dealers information at the end of the round.
     players['dealer'] = {'hands': {}, 'soft': False}
-    print(players)
     play_again()
