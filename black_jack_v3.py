@@ -198,8 +198,8 @@ def player_choices(player_list, active_player) -> list:
     while get_hand_value(sorted_player_hand, player_list) < 21:
         print(f"{active_player} cards: {sorted_player_hand}\n"
               f"{active_player} total: {get_hand_value(sorted_player_hand, player_list)}\n")
-        user_input = input(f"{active_player}: Stay[0] Hit[1] Double[2] Split[3]").strip()
-        if user_input.isnumeric() and int(user_input) in range(4):
+        user_input = input(f"{active_player}: Stay[0] Hit[1] Double[2] ").strip()
+        if user_input.isnumeric() and int(user_input) in range(3):
             if int(user_input) == 1:
                 new_card = [shoe.pop()]
                 sorted_player_hand += new_card
@@ -221,13 +221,13 @@ def player_choices(player_list, active_player) -> list:
                 else:
                     print("You do no have enough chips to double...")
                     continue
-            elif int(user_input) == 3:
-                # ******************
-                print("player handS", player_list[player]['hands'])
-                for card in player_list[active_player]['hands']['hand 1']:
-                    print("card: ", card)
-                split_hand(player_list, active_player)
-                print(player_list[player]['hands'])
+            # elif int(user_input) == 3:
+            #     # ******************
+            #     print("player handS", player_list[player]['hands'])
+            #     for card in player_list[active_player]['hands']['hand 1']:
+            #         print("card: ", card)
+            #     split_hand(player_list, active_player)
+            #     print(player_list[player]['hands'])
             else:
                 print(f"{active_player} stays with {get_hand_value(sorted_player_hand, player_list)}\n")
                 print("*" * 88)
