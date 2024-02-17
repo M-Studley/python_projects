@@ -59,16 +59,24 @@ class ItemManager:
             inventory[self.item.category] = []
 
     def add_item(self) -> None:
-        # checks to see if the items category exists and adds if it does not or moves on if it does exist
-        # will add the item to the inventory if non-existent.  prints status for confirmation
+        # checks if the items category exists. adds if non-existent otherwise moves on
+        # adds the item to the inventory if non-existent, otherwise prints that it exists
+        # prompts user if they would like to add another of the same item, if y it does
         if self.item.category not in inventory:
             self.__add_category()
 
-        if self.item.name not in inventory[self.item.category]:
-            inventory[self.item.category].append(self.item.name)
+        item_found = any(item[0] == self.item.name for item in inventory.get(self.item.category, []))
+
+        if not item_found:
+            inventory[self.item.category].append((self.item.name, self.item.price))
             print(f"'{self.item.name}' Added Successfully...")
         else:
             print(f"'{self.item.name}' Already in Inventory...")
+            add_another = "Would you like to add another?\nPlease enter 'y' or 'n': "
+            if get_bool(add_another):
+                inventory[self.item.category].append((self.item.name, self.item.price))
+            else:
+                print(f"'{self.item.name}' was NOT added to the inventory")
 
     def remove_item(self):
         # will check for item in the category and produce a message
@@ -85,10 +93,28 @@ def get_inventory() -> str:
     return "\n".join([f"{key.title()}: {value}" for key, value in inventory.items()])
 
 
+def get_full_inventory_sum() -> float:
+    # returns the total sum of all items in the inventory
+    total: float = 0.0
+    for value in inventory.values():
+        for name_price in value:
+            total += name_price[-1]
+    return total
+
+
+def get_bool(bool_inquery) -> bool:
+    # helper function that returns True for 'y' or False for 'n' otherwise will continue to loop
+    user_input = input(bool_inquery)
+    while user_input not in ['y', 'n']:
+        user_input = input("Invalid input...\nPlease enter 'y' or 'n': ").strip().lower()
+    if user_input == 'y':
+        return True
+
+
 # # ADD_ITEM() TESTING and GET_INVENTORY() TESTING...
 # lavazza_dark_roast = Item(
 #     name='Lavazza Dark Roast',
-#     category='Coffee Beans',
+#     category='coffee beans',
 #     quantity=1,
 #     price=1690.00,
 #     weight=1000,
@@ -100,7 +126,7 @@ def get_inventory() -> str:
 #
 # lavazza_light_roast = Item(
 #     name='Lavazza Light Roast',
-#     category='Coffee Beans',
+#     category='coffee beans',
 #     quantity=1,
 #     price=1490.00,
 #     weight=1000,
@@ -111,6 +137,9 @@ def get_inventory() -> str:
 #     checked_out=60)
 #
 # ItemManager(lavazza_dark_roast).add_item()
+# print(get_inventory())
+# print()
+# ItemManager(lavazza_light_roast).add_item()
 # print(get_inventory())
 # print()
 # ItemManager(lavazza_light_roast).add_item()
@@ -208,3 +237,34 @@ def get_inventory() -> str:
 # ItemManager(lavazza_dark_roast).add_item()
 # ItemManager(lavazza_light_roast).remove_item()
 # print(get_inventory())
+
+
+# # GET_FULL_INVENTORY_SUM() TESTING...
+# lavazza_dark_roast = Item(
+#     name='Lavazza Dark Roast',
+#     category='coffee beans',
+#     quantity=1,
+#     price=1690.00,
+#     weight=1000,
+#     unit_of_measurement='g',
+#     purveyor='Lazada',
+#     month_ordered=2,
+#     checked_in=47,
+#     checked_out=60)
+#
+# lavazza_light_roast = Item(
+#     name='Lavazza Light Roast',
+#     category='coffee beans',
+#     quantity=1,
+#     price=1490.00,
+#     weight=1000,
+#     unit_of_measurement='g',
+#     purveyor='Lazada',
+#     month_ordered=2,
+#     checked_in=47,
+#     checked_out=60)
+#
+# ItemManager(lavazza_dark_roast).add_item()
+# ItemManager(lavazza_light_roast).add_item()
+# print(get_full_inventory_sum())
+# print()
