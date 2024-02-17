@@ -38,29 +38,39 @@ class GetAddRemoveItem:
         self.item = item_name
 
     def get_item(self) -> str:
+        # returns the items name
         return str(self.item.name)
 
     def get_items_in_category(self) -> str:
+        # returns the category the item is listed in
         return str(inventory[self.item.category])
 
     def add_category(self) -> None:
+        # adds a category if non-existing.  used in the add_item function exclusively
         if self.item.category not in inventory:
             inventory[self.item.category] = []
 
-# TODO: not registering that the self.item.name is in inventory.values()....  FIX ME
     def add_item(self) -> None:
+        # checks to see if the items category exists and adds if it does not or moves on if it does exist
+        # will add the item to the inventory if non-existent.  prints status for confirmation
         if self.item.category not in inventory:
             self.add_category()
 
-        if self.item.name not in inventory.values():
+        if self.item.name not in inventory[self.item.category]:
             inventory[self.item.category].append(self.item.name)
-            print(f"{self.item.name} Added Successfully...")
+            print(f"'{self.item.name}' Added Successfully...")
         else:
-            print(f"{self.item.name} already in inventory...")
+            print(f"'{self.item.name}' Already in Inventory...")
 
-    def remove_item(self) -> str:
-        del self.item
-        return f"{self.item.name} Removed Successfully..."
+    def remove_item(self):
+        # will check for item in the category and produce a message
+        # if item in inventory{} it will delete it and print status message
+        if self.item.name not in inventory[self.item.category]:
+            print(f"'{self.item.name}' Not Found...")
+        else:
+            item_location = inventory[self.item.category].index(self.item.name)
+            del inventory[self.item.category][item_location]
+            print(f"'{self.item.name}' Removed Successfully...")
 
 
 lavazza_dark_roast = Item(
@@ -76,20 +86,20 @@ lavazza_dark_roast = Item(
     checked_out=60
 )
 
-lavazza_light_roast = Item(
-    name='Lavazza Light Roast',
+lavazza_medium_roast = Item(
+    name='Lavazza Medium Roast',
     category='Coffee Beans',
     quantity=1,
-    price=1490.00,
+    price=1590.00,
     weight=1000,
     unit_of_measurement='g',
     purveyor='Lazada',
     month_ordered=2,
-    checked_in=47,
+    checked_in=48,
     checked_out=60
 )
 
-lavazza_light_roast2 = Item(
+lavazza_light_roast = Item(
     name='Lavazza Light Roast',
     category='Coffee Beans',
     quantity=1,
@@ -110,6 +120,14 @@ GetAddRemoveItem(lavazza_light_roast).add_item()
 print(inventory)
 print(GetAddRemoveItem(lavazza_light_roast).get_items_in_category())
 print()
-GetAddRemoveItem(lavazza_light_roast2).add_item()
+GetAddRemoveItem(lavazza_medium_roast).add_item()
 print(inventory)
-print(GetAddRemoveItem(lavazza_light_roast2).get_items_in_category())
+print(GetAddRemoveItem(lavazza_medium_roast).get_items_in_category())
+print()
+GetAddRemoveItem(lavazza_medium_roast).remove_item()
+print(inventory)
+print(GetAddRemoveItem(lavazza_medium_roast).get_items_in_category())
+print()
+GetAddRemoveItem(lavazza_medium_roast).remove_item()
+print(inventory)
+print(GetAddRemoveItem(lavazza_medium_roast).get_items_in_category())
