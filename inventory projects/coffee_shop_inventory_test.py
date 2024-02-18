@@ -244,3 +244,5 @@ ItemManager(singha_water_1500ml).add_item()
 # '''GET_FULL_INVENTORY_SUM() TESTING...'''
 #
 # print(get_full_inventory_sum())
+
+# TESTING FOR GIT
