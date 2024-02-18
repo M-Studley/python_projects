@@ -19,4 +19,5 @@ Thank you for reading this file and feel free to reach out to me at anytime here
 3. Rock, Paper, Scissors Game
 4. Zanzibar Dice Game
 5. Hangman Game
-6. Blackjack Game (CURRENT)
+6. Blackjack Game (Incomplete)
+7. Coffee Shop Inventory (CURRENT)
