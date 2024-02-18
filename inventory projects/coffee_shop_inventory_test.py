@@ -2,7 +2,7 @@ from coffee_shop_inventory import *
 
 # ---------------- TESTING OBJECT ---------------- #
 
-test_item = Item(
+test_item = Item(       # do not add
     name='Test Item',
     category='Test',
     price=999.99,
@@ -244,5 +244,3 @@ ItemManager(singha_water_1500ml).add_item()
 # '''GET_FULL_INVENTORY_SUM() TESTING...'''
 #
 # print(get_full_inventory_sum())
-
-# TESTING FOR GIT
