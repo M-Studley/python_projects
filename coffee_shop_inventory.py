@@ -35,8 +35,8 @@ class Item:
         elif self.checked_out is None:
             self.time_in_store = "Item has not been checked out..."
 
-    # returns all information on an item
     def __repr__(self) -> str:
+        # returns all information on an item
         return "\n".join([f"{key.capitalize()}: {value}" for key, value in self.__dict__.items()])
 
 
@@ -46,8 +46,7 @@ class ItemManager:
 
     def __add_category(self) -> None:
         # adds a category if non-existing.  used in the add_item function exclusively
-        if self.item.category not in inventory:
-            inventory[self.item.category] = []
+        inventory[self.item.category] = []
 
     def add_item(self) -> None:
         # checks if the items category exists. adds if non-existent otherwise moves on
@@ -71,7 +70,7 @@ class ItemManager:
                 print(f"'{self.item.name}' was NOT added to the inventory")
 
     def remove_item(self):
-        # will check for item in the category and produce a message
+        # checks for item in the category and produce a message
         # if item in inventory{} it will remove it and print a status message
         for index, tup in enumerate(inventory.get(self.item.category)):
             if self.item.name in tup:
@@ -88,14 +87,19 @@ def get_inventory() -> str:
 
 
 def get_categories() -> str:
+    # returns all categories in the inventory
     return "\n".join([f"{category.title()}" for category in inventory])
 
 
 def get_all_items() -> str:
+    # returns all the items in the inventory
     all_items = ""
-    for key, value in inventory.items():
-        for _ in value:
-            all_items += "\n".join([f"{item[0]}" for item in value])
+    for values in inventory.values():
+        for value in values:
+            for item in value:
+                print("Item:", item)
+                if isinstance(item, str):
+                    all_items += f"\n{item}"
     return all_items
 
 
@@ -106,6 +110,13 @@ def get_items_in_category(category: str) -> str:
         return "\n".join([item[0] for item in inventory.get(category, [])])
     else:
         return f"Category {category.upper()} not found...\n"
+
+
+def get_item_count(inventory_item) -> int:
+    # returns the count of an item passed in
+    for values in inventory.values():
+        for items in values:
+            return items.count(inventory_item)
 
 
 def get_full_inventory_sum() -> float:
