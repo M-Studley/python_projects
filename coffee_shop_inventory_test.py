@@ -176,7 +176,8 @@ ItemManager(singha_water_1500ml).add_item()
 
 # ---------------- TESTS ---------------- #
 
-# # ADD_ITEM() TESTING and GET_INVENTORY() TESTING...
+
+# '''ADD_ITEM() TESTING and GET_INVENTORY() TESTING...'''
 #
 # ItemManager(lavazza_dark_roast).add_item()
 # print(get_inventory())
@@ -189,59 +190,57 @@ ItemManager(singha_water_1500ml).add_item()
 # print()
 
 
-# # NO CHECKED_IN OR CHECKED_OUT TESTING
+# '''REMOVE_ITEM() TESTING...'''
 #
-# print(lavazza_medium_roast)
-# print()
-
-
-# GET_ITEMS_IN_CATEGORY() TESTING...
-#
-# # SUCCESSFUL
-# print(get_inventory())
-# print()
-# print(ItemManager(lavazza_dark_roast).get_items_in_category())
-# print()
-#
-# # UNSUCCESSFUL
-# print(get_inventory())
-# print()
-# print(ItemManager(test_item).get_items_in_category())
-# print()
-
-
-# # REMOVE_ITEM() TESTING...
-#
-# # SUCCESSFUL
+# '''SUCCESSFUL'''
 # print(get_inventory() + "\n")
 # ItemManager(lavazza_dark_roast).remove_item()
 # print("\n" + get_inventory())
 #
-# # UNSUCCESSFUL
+# '''UNSUCCESSFUL'''
 # print(get_inventory())
 # print()
 # ItemManager(test_item).remove_item()
 
 
-# # GET_FULL_INVENTORY_SUM() TESTING...
+# '''GET_CATEGORIES() TESTING...'''
 #
-# print(get_full_inventory_sum())
-
-
-# # GET_ITEMS_IN_CATEGORY() TESTING...
-#
-# SUCCESSFUL
-# print()
-# print(get_items_in_category('water'))
-# UNSUCCESSFUL
-# print()
-# print(get_items_in_category('equipment'))
-
-
-# # GET_ITEMS_IN_CATEGORY() TESTING...
-# #
 # print()
 # print(get_categories())
 
-print(get_all_items())
 
+# '''GET_ALL_ITEMS() TESTING...'''
+#
+# print()
+# print(get_all_items())
+
+
+# '''NO CHECKED_IN OR CHECKED_OUT TESTING...'''
+#
+# print(lavazza_medium_roast)
+# print()
+
+
+# '''GET_ITEMS_IN_CATEGORY() TESTING...'''
+#
+# '''SUCCESSFUL'''
+# print(get_inventory())
+# print()
+# print(get_items_in_category('water'))
+# print()
+#
+# '''UNSUCCESSFUL'''
+# print(get_inventory())
+# print()
+# print(get_items_in_category('test'))
+# print()
+
+
+# '''GET_ITEM_COUNT() TESTING'''
+#
+# print(get_item_count('Lavazza Dark Roast'))
+
+
+# '''GET_FULL_INVENTORY_SUM() TESTING...'''
+#
+# print(get_full_inventory_sum())
