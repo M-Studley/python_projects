@@ -2,20 +2,22 @@ from coffee_shop_inventory import *
 
 # ---------------- TESTING OBJECT ---------------- #
 
-# test_item = Item(       # do not add
-#     name='test item',
-#     category='test',
-#     price=999.99,
-#     weight=99,
-#     unit_of_measurement='test',
-#     purveyor='test',
-#     month_ordered=13)
+test_item = Item(
+    name='test item',
+    category='test',
+    item_count=1,
+    price=999.99,
+    weight=99,
+    unit_of_measurement='test',
+    purveyor='test',
+    month_ordered=13)
 
 # ---------------- COFFEE BEANS ---------------- #
 
 lavazza_dark_roast = Item(
     name='lavazza dark roast',
     category='coffee beans',
+    item_count=1,
     price=1690.00,
     weight=1000,
     unit_of_measurement='g',
@@ -27,6 +29,7 @@ lavazza_dark_roast = Item(
 lavazza_medium_roast = Item(
     name='lavazza medium roast',
     category='coffee beans',
+    item_count=1,
     price=1590.00,
     weight=1000,
     unit_of_measurement='g',
@@ -36,6 +39,7 @@ lavazza_medium_roast = Item(
 lavazza_light_roast = Item(
     name='lavazza light roast',
     category='coffee beans',
+    item_count=1,
     price=1490.00,
     weight=1000,
     unit_of_measurement='g',
@@ -53,6 +57,7 @@ ItemManager(lavazza_light_roast).add_item()
 heavy_cream = Item(
     name='heavy cream',
     category='dairy',
+    item_count=1,
     price=279.00,
     weight=1000,
     unit_of_measurement='ml',
@@ -62,6 +67,7 @@ heavy_cream = Item(
 whole_milk = Item(
     name='milk (whole)',
     category='dairy',
+    item_count=1,
     price=95.00,
     weight=1000,
     unit_of_measurement='ml',
@@ -76,6 +82,7 @@ ItemManager(whole_milk).add_item()
 white_sugar = Item(
     name='sugar (white)',
     category='dry goods',
+    item_count=1,
     price=38.00,
     weight=1000,
     unit_of_measurement='g',
@@ -85,6 +92,7 @@ white_sugar = Item(
 brown_sugar = Item(
     name='sugar (brown)',
     category='dry goods',
+    item_count=1,
     price=55.00,
     weight=1000,
     unit_of_measurement='g',
@@ -99,6 +107,7 @@ ItemManager(brown_sugar).add_item()
 beverage_napkins = Item(
     name='beverage napkins (black)',
     category='paper goods',
+    item_count=1,
     price=59.00,
     weight=200,
     unit_of_measurement='piece',
@@ -108,6 +117,7 @@ beverage_napkins = Item(
 branded_napkins = Item(
     name='branded napkins (white)',
     category='paper goods',
+    item_count=1,
     price=120.00,
     weight=100,
     unit_of_measurement='piece',
@@ -122,6 +132,7 @@ ItemManager(branded_napkins).add_item()
 ham_cheese_toastie = Item(
     name='ham & cheese toastie',
     category='ready to eat',
+    item_count=1,
     price=1560.00,
     weight=40,
     unit_of_measurement='piece',
@@ -131,6 +142,7 @@ ham_cheese_toastie = Item(
 pumpkin_soup = Item(
     name='soup (pumpkin)',
     category='ready to eat',
+    item_count=1,
     price=1160.00,
     weight=3785,
     unit_of_measurement='ml',
@@ -140,6 +152,7 @@ pumpkin_soup = Item(
 egg_tart = Item(
     name='tart (egg)',
     category='ready to eat',
+    item_count=1,
     price=960.00,
     weight=20,
     unit_of_measurement='piece',
@@ -155,6 +168,7 @@ ItemManager(egg_tart).add_item()
 singha_water_750ml = Item(
     name='singha bottled water (750ml)',
     category='water',
+    item_count=1,
     price=89.00,
     weight=12,
     unit_of_measurement='piece',
@@ -164,6 +178,17 @@ singha_water_750ml = Item(
 singha_water_1500ml = Item(
     name='singha bottled water (1L)',
     category='water',
+    item_count=1,
+    price=55.00,
+    weight=6,
+    unit_of_measurement='piece',
+    purveyor='big c',
+    month_ordered=2)
+
+singha_water2_1500ml = Item(
+    name='singha bottled water (1L)',
+    category='water',
+    item_count=1,
     price=55.00,
     weight=6,
     unit_of_measurement='piece',
@@ -174,33 +199,29 @@ ItemManager(singha_water_750ml).add_item()
 ItemManager(singha_water_1500ml).add_item()
 
 
-# ---------------- TESTS ---------------- #
-# print(full_inventory)
-print(singha_water_750ml)
+'''-------------------------------- TESTS --------------------------------'''
 
 
 '''ADD_ITEM() TESTING and GET_INVENTORY() TESTING...'''
 #
+# print()
+# print(full_inventory[lavazza_dark_roast.name])
+# print()
 # ItemManager(lavazza_dark_roast).add_item()
-# print(get_inventory())
-# print()
-# ItemManager(lavazza_light_roast).add_item()
-# print(get_inventory())
-# print()
-# ItemManager(lavazza_light_roast).add_item()
-# print(get_inventory())
-# print()
+# print(full_inventory[lavazza_dark_roast.name])
 
 
 '''REMOVE_ITEM() TESTING...'''
 #
-# '''SUCCESSFUL'''
-# print(get_inventory() + "\n")
+'''SUCCESSFUL'''
+# print()
+# print(full_inventory[lavazza_dark_roast.name])
+# print()
 # ItemManager(lavazza_dark_roast).remove_item()
+# print(full_inventory)
 # print("\n" + get_inventory())
 #
-# '''UNSUCCESSFUL'''
-# print(get_inventory())
+'''UNSUCCESSFUL'''
 # print()
 # ItemManager(test_item).remove_item()
 
@@ -243,13 +264,13 @@ print(singha_water_750ml)
 
 '''GET_ITEMS_IN_CATEGORY() TESTING...'''
 #
-# '''SUCCESSFUL'''
+'''SUCCESSFUL'''
 # print(get_inventory())
 # print()
 # print(get_items_in_category('water'))
 # print()
 #
-# '''UNSUCCESSFUL'''
+'''UNSUCCESSFUL'''
 # print(get_inventory())
 # print()
 # print(get_items_in_category('test'))
@@ -266,7 +287,7 @@ print(singha_water_750ml)
 # print(get_full_inventory_sum())
 
 
-# '''GET_ALL_CATEGORY_SUM() TESTING'''
+'''GET_ALL_CATEGORY_SUM() TESTING'''
 #
 # print(get_all_category_sum())
 
