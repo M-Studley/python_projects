@@ -4,13 +4,15 @@ from coffee_shop_inventory import *
 
 test_item = Item(
     name='test item',
-    category='test',
+    category='test category',
     item_count=1,
     price=999.99,
     weight=99,
-    unit_of_measurement='test',
-    purveyor='test',
+    unit_of_measurement='test unit',
+    purveyor='test purveyor',
     month_ordered=13)
+
+# ItemManager(test_item).add_item()
 
 # ---------------- COFFEE BEANS ---------------- #
 
@@ -185,16 +187,6 @@ singha_water_1500ml = Item(
     purveyor='big c',
     month_ordered=2)
 
-singha_water2_1500ml = Item(
-    name='singha bottled water (1L)',
-    category='water',
-    item_count=1,
-    price=55.00,
-    weight=6,
-    unit_of_measurement='piece',
-    purveyor='big c',
-    month_ordered=2)
-
 ItemManager(singha_water_750ml).add_item()
 ItemManager(singha_water_1500ml).add_item()
 
@@ -202,7 +194,7 @@ ItemManager(singha_water_1500ml).add_item()
 '''-------------------------------- TESTS --------------------------------'''
 
 
-'''ADD_ITEM() TESTING and GET_INVENTORY() TESTING...'''
+'''ADD_ITEM() TESTING...'''
 #
 # print()
 # print(full_inventory[lavazza_dark_roast.name])
@@ -229,19 +221,34 @@ ItemManager(singha_water_1500ml).add_item()
 '''CHANGE_CHECKED_IN TESTING...'''
 #
 # print()
-# print(singha_water_1500ml)
+# print("singha 1500:", singha_water_1500ml)
+# print()
+# print("full inventory:", full_inventory)
+# print()
 # ItemManager(singha_water_1500ml).change_checked_in(49)
-# print(singha_water_1500ml)
+# print("singha 1500:", singha_water_1500ml)
+# print()
+# print("full inventory:", full_inventory)
 
 
 '''CHANGE_CHECKED_OUT TESTING...'''
 #
 # ItemManager(singha_water_1500ml).change_checked_in(49)
+# print()
+# print("singha 1500:", singha_water_1500ml)
+# print()
+# print("full inventory:", full_inventory)
+# print()
+# ItemManager(singha_water_1500ml).change_checked_out(59)
+# print("singha 1500:", singha_water_1500ml)
+# print()
+# print("full inventory:", full_inventory)
+
+
+'''GET_INVENTORY() TESTING...'''
 #
 # print()
-# print(singha_water_1500ml)
-# ItemManager(singha_water_1500ml).change_checked_out(61)
-# print(singha_water_1500ml)
+# print(get_inventory())
 
 
 '''GET_CATEGORIES() TESTING...'''
@@ -254,41 +261,41 @@ ItemManager(singha_water_1500ml).add_item()
 #
 # print()
 # print(get_all_items())
+# print(len(get_all_items()))
 
 
 '''NO CHECKED_IN OR CHECKED_OUT TESTING...'''
 #
-# print(lavazza_medium_roast)
 # print()
+# print(lavazza_medium_roast)
 
 
 '''GET_ITEMS_IN_CATEGORY() TESTING...'''
 #
 '''SUCCESSFUL'''
-# print(get_inventory())
 # print()
-# print(get_items_in_category('water'))
-# print()
-#
+# print(get_items_in_category('coffee beans'))
+
 '''UNSUCCESSFUL'''
-# print(get_inventory())
 # print()
-# print(get_items_in_category('test'))
-# print()
+# print(get_items_in_category('test category'))
 
 
 '''GET_ITEM_COUNT() TESTING'''
 #
-# print(get_item_count('Lavazza Dark Roast'))
+# print()
+# print(get_item_count('lavazza dark roast'))
 
 
 '''GET_FULL_INVENTORY_SUM() TESTING...'''
 #
+# print()
 # print(get_full_inventory_sum())
 
 
 '''GET_ALL_CATEGORY_SUM() TESTING'''
 #
+# print()
 # print(get_all_category_sum())
 
 
