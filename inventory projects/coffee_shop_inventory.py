@@ -45,7 +45,6 @@ class ItemManager:
     def add_item(self) -> None:
         # checks to see if the item being added is a duplicate (checked by item name)
         # if item exists it raises the counter of the original item
-
         if self.item.name not in full_inventory:
             full_inventory.update(
                 {self.item.name: [('category', self.item.category),
@@ -71,7 +70,7 @@ class ItemManager:
     def remove_item(self) -> None:
         # if there is more than one item, it will decrement the count by one
         # if there is only one item, it will remove it from full inventory
-        current_count = get_current_count(self.item.name)
+        current_count = get_item_count(self.item.name)
         if self.item.name in full_inventory:
             if current_count > 1:
                 update_count(self.item.name, '-')
@@ -81,81 +80,94 @@ class ItemManager:
             print(f"'{self.item.name.title()}' Not Found...")
 
     def change_checked_in(self, day_of_year: int) -> None:
-        # changes the checked in day
+        # changes the checked in day on both the object and the full inventory dict
         if isinstance(day_of_year, int) and day_of_year in range(1, 367):
             self.item.checked_in = day_of_year
+            full_inventory[self.item.name][7] = ('checked in', day_of_year)
 
     def change_checked_out(self, day_of_year: int) -> None:
-        # changes the checked out day along with time in store
+        # changes the checked out day in both the object and the full inventory dict
+        # also updates the time in store in both the object and the full inventory dict
         if isinstance(day_of_year, int) and day_of_year in range(1, 367):
             self.item.checked_out = day_of_year
+            full_inventory[self.item.name][8] = ('checked out', day_of_year)
             self.item.time_in_store = f"{self.item.checked_out - self.item.checked_in} days"
+            full_inventory[self.item.name][9] = ('time in store', self.item.checked_out - self.item.checked_in)
 
 
 def get_inventory() -> str:
     # returns an inventory in string form
-    return "\n".join([f"{key.title()}: {value}" for key, value in full_inventory.items()])
+    inventory = ""
+    for key, value in full_inventory.items():
+        inventory += f"{key.upper()}\n"
+        for tup in value:
+            inventory += f"{tup[0].title()}: {str(tup[1]).title()}\n"
+        inventory += '\n'
+
+    return inventory
 
 
-def get_categories() -> str:
-    # returns all categories in the inventory
-    return "\n".join([f"{category.title()}" for category in full_inventory])
+def get_categories() -> list:
+    # returns a sorted list of all categories in the inventory
+    category_set = set()
+    for value in full_inventory.values():
+        category_set.add(value[0][1])
+
+    return sorted(category_set)
 
 
-def get_all_items() -> str:
-    # returns all the items in the inventory
-    all_items = ""
-    for values in full_inventory.values():
-        for value in values:
-            for item in value:
-                if isinstance(item, str):
-                    all_items += f"\n{item}"
-    return all_items
+def get_all_items() -> list:
+    # returns all the items in the inventory, sorted
+    all_items = []
+    for item in full_inventory:
+        [all_items.append(item) for _ in range(get_item_count(item))]
+
+    return sorted(all_items)
 
 
-def get_items_in_category(category: str) -> str:
+def get_items_in_category(category: str) -> list:
     # returns the items inside a given category
-    if category in full_inventory:
-        print(f"Category: {category.upper()}")
-        return "\n".join([item[0] for item in full_inventory.get(category, [])])
-    else:
-        return f"Category {category.upper()} not found...\n"
+    items = []
+    for key, values in full_inventory.items():
+        for value in values:
+            if category in value:
+                [items.append(key) for _ in range(get_item_count(key))]
 
-
-def get_item_count(inventory_item) -> int:
-    # returns the count of an item passed in
-    for values in full_inventory.values():
-        for items in values:
-            return items.count(inventory_item)
+    return items
 
 
 def get_full_inventory_sum() -> float:
     # returns the total sum of all items in the inventory
     total: float = 0.00
-    for value in full_inventory.values():
-        for name_price in value:
-            total += name_price[-1]
+    for item in full_inventory:
+        total += (full_inventory[item][2][1]*get_item_count(item))
+
     return total
 
 
-def get_all_category_sum() -> str:
-    # returns a breakdown of all categories sum
-    category_breakdown = ""
-    for category in full_inventory:
-        category_sum = [sum(item[1] for item in full_inventory.get(category, []))]
-        category_breakdown += f"\n{category.title()}: {category_sum[0]}"
-    return category_breakdown
+def get_all_category_sum() -> dict:
+    # returns a dictionary breakdown of all categories names and their sum
+    category_totals = {}
+    [category_totals.update({category: 0}) for category in get_categories()]
+
+    for values in full_inventory.values():
+        category_totals[values[0][1]] += values[2][1]*values[1][1]
+
+    return category_totals
 
 
 def get_category_sum(category) -> float:
     # returns the total amount in a specific category
-    if category in full_inventory:
-        category_sum = [sum(item[1] for item in full_inventory.get(category, []))]
-        print(category.title())
-        return category_sum[0]
-    else:
-        print(f"{category.title()} not found...")
-        return 0
+    category_sum: float = 0.00
+    for values in full_inventory.values():
+        if values[0][1] == category:
+            print(values)
+            category_sum += values[2][1]*values[1][1]
+
+    return category_sum
+
+
+'''---------------- HELPER FUNCTIONS ----------------'''
 
 
 def get_bool(bool_inquery) -> bool:
@@ -167,7 +179,7 @@ def get_bool(bool_inquery) -> bool:
         return True
 
 
-def get_current_count(item_name) -> int:
+def get_item_count(item_name) -> int:
     # helper function to get the current item count
     if item_name in full_inventory:
         return full_inventory[item_name][1][1]
@@ -175,13 +187,13 @@ def get_current_count(item_name) -> int:
         return 0
 
 
-def update_count(item_name, operator):
+def update_count(item_name, operator) -> None:
     # helper function that pops the tuple out and inserts tuple with updated count
     if operator == '+':
-        new_count_set = ('item count', get_current_count(item_name) + 1)
+        new_count_set = ('item count', get_item_count(item_name) + 1)
         full_inventory[item_name].pop(1)
         full_inventory[item_name].insert(1, new_count_set)
     else:
-        new_count_set = ('item count', get_current_count(item_name) - 1)
+        new_count_set = ('item count', get_item_count(item_name) - 1)
         full_inventory[item_name].pop(1)
         full_inventory[item_name].insert(1, new_count_set)
