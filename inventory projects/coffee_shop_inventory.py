@@ -116,6 +116,15 @@ def get_categories() -> list:
     return sorted(category_set)
 
 
+def get_purveyors() -> list:
+    # returns a sorted list of all categories in the inventory
+    category_set = set()
+    for value in full_inventory.values():
+        category_set.add(value[5][1])
+
+    return sorted(category_set)
+
+
 def get_all_items() -> list:
     # returns all the items in the inventory, sorted
     all_items = []
@@ -131,6 +140,28 @@ def get_items_in_category(category: str) -> list:
     for key, values in full_inventory.items():
         for value in values:
             if category in value:
+                [items.append(key) for _ in range(get_item_count(key))]
+
+    return items
+
+
+def get_items_by_purveyor(purveyor):
+    # returns the items inside a given purveyor
+    items = []
+    for key, values in full_inventory.items():
+        for value in values:
+            if purveyor in value:
+                [items.append(key) for _ in range(get_item_count(key))]
+
+    return items
+
+
+def get_items_by_order_month(order_month: int) -> list:
+    # returns the items inside a given category
+    items = []
+    for key, values in full_inventory.items():
+        for value in values:
+            if order_month in value:
                 [items.append(key) for _ in range(get_item_count(key))]
 
     return items
@@ -161,6 +192,28 @@ def get_category_sum(category) -> float:
     category_sum: float = 0.00
     for values in full_inventory.values():
         if values[0][1] == category:
+            print(values)
+            category_sum += values[2][1]*values[1][1]
+
+    return category_sum
+
+
+def get_purveyor_sum(purveyor) -> float:
+    # returns the total amount in a specific category
+    category_sum: float = 0.00
+    for values in full_inventory.values():
+        if values[5][1] == purveyor:
+            print(values)
+            category_sum += values[2][1]*values[1][1]
+
+    return category_sum
+
+
+def get_order_month_sum(order_month) -> float:
+    # returns the total amount in a specific category
+    category_sum: float = 0.00
+    for values in full_inventory.values():
+        if values[6][1] == order_month:
             print(values)
             category_sum += values[2][1]*values[1][1]
 
