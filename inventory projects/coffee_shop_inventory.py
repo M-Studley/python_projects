@@ -117,7 +117,7 @@ def get_categories() -> list:
 
 
 def get_purveyors() -> list:
-    # returns a sorted list of all categories in the inventory
+    # returns a sorted list of all purveyors in the inventory
     category_set = set()
     for value in full_inventory.values():
         category_set.add(value[5][1])
@@ -157,7 +157,7 @@ def get_items_by_purveyor(purveyor):
 
 
 def get_items_by_order_month(order_month: int) -> list:
-    # returns the items inside a given category
+    # returns the items for a given order month
     items = []
     for key, values in full_inventory.items():
         for value in values:
@@ -199,7 +199,7 @@ def get_category_sum(category) -> float:
 
 
 def get_purveyor_sum(purveyor) -> float:
-    # returns the total amount in a specific category
+    # returns the total amount in a specific purveyor
     category_sum: float = 0.00
     for values in full_inventory.values():
         if values[5][1] == purveyor:
@@ -210,7 +210,7 @@ def get_purveyor_sum(purveyor) -> float:
 
 
 def get_order_month_sum(order_month) -> float:
-    # returns the total amount in a specific category
+    # returns the total amount in a specific order month
     category_sum: float = 0.00
     for values in full_inventory.values():
         if values[6][1] == order_month:
