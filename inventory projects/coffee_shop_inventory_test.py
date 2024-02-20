@@ -63,7 +63,7 @@ heavy_cream = Item(
     price=279.00,
     weight=1000,
     unit_of_measurement='ml',
-    purveyor='gourmet market',
+    purveyor='makro',
     month_ordered=2)
 
 whole_milk = Item(
@@ -138,7 +138,7 @@ ham_cheese_toastie = Item(
     price=1560.00,
     weight=40,
     unit_of_measurement='piece',
-    purveyor='lazada',
+    purveyor='makro',
     month_ordered=2)
 
 pumpkin_soup = Item(
@@ -174,7 +174,7 @@ singha_water_750ml = Item(
     price=89.00,
     weight=12,
     unit_of_measurement='piece',
-    purveyor='gourmet market',
+    purveyor='big c',
     month_ordered=2)
 
 singha_water_1500ml = Item(
@@ -257,6 +257,12 @@ ItemManager(singha_water_1500ml).add_item()
 # print(get_categories())
 
 
+'''GET_PURVEYORS() TESTING...'''
+#
+# print()
+# print(get_purveyors())
+
+
 '''GET_ALL_ITEMS() TESTING...'''
 #
 # print()
@@ -275,6 +281,17 @@ ItemManager(singha_water_1500ml).add_item()
 '''SUCCESSFUL'''
 # print()
 # print(get_items_in_category('coffee beans'))
+
+'''UNSUCCESSFUL'''
+# print()
+# print(get_items_in_category('test category'))
+
+
+'''GET_ITEMS_BY_PURVEYOR() TESTING...'''
+#
+'''SUCCESSFUL'''
+# print()
+# print(get_items_in_category('lazada'))
 
 '''UNSUCCESSFUL'''
 # print()
@@ -303,3 +320,15 @@ ItemManager(singha_water_1500ml).add_item()
 #
 # print()
 # print(get_category_sum('coffee beans'))
+
+
+'''GET_PURVEYOR_SUM() TESTING...'''
+#
+# print()
+# print(get_purveyor_sum('makro'))
+
+
+'''GET_ORDER_MONTH_SUM() TESTING...'''
+#
+# print()
+# print(get_order_month_sum(2))
