@@ -12,7 +12,7 @@ class Item:
                  purveyor: str,
                  month_ordered: int,
                  checked_in: int = None,
-                 checked_out: int = None):
+                 checked_out: int = None,):
         self.name = name
         self.category = category
         self.item_count = item_count
@@ -37,6 +37,21 @@ class Item:
         return "\n".join([f"{key.title()}: {str(value).title()}" for key, value in self.__dict__.items()])
 
 
+# TODO - build a class for menu items and their cost
+# TODO - espresso = 10g of ground coffee = 30ml of liquid
+# TODO - espresso, double = 20g of ground coffee = 60ml of liquid
+# TODO - americano = 20g of ground coffee = 60ml of liquid
+# TODO - latte = 20g of ground coffee = 60ml of liquid, 300ml of milk, steamed
+# TODO - cappuccino = 20g of ground coffee = 60ml of liquid, 60ml of milk, steamed
+# TODO - flat white = 20g of ground coffee = 60ml of liquid, 120ml of milk, steamed
+# TODO - cafe noisette = 20g of ground coffee = 30ml of liquid, 120ml of milk, steamed
+# TODO - this will take in the ingredients      menu_item_1 = {'latte': {'coffee beans': 20g*cost_by_weight,
+#                                                                        'milk (whole)': 300ml*cost_by_weight}}
+#                                               menu_item_2 = {'cappuccino': {'coffee beans': 10g*cost_by_weight}}
+#                                               menu_item_3 = {'espresso, single': {'coffee beans': 10g*cost_by_weight}}
+#                                               menu_item_4 = {'espresso, double': {'coffee beans': 20g*cost_by_weight}}
+
+# TODO change ItemManager to a dataclass
 class ItemManager:
     # responsible for adding an item and category, removing, and changing checked in and out days
     def __init__(self, item_name: Item):
@@ -58,14 +73,15 @@ class ItemManager:
                                   ('checked out', self.item.checked_out),
                                   ('time in store', self.item.time_in_store)]})
 
-            print(f"'{self.item.name.title()}' Added Successfully...")
+            print(f"'{self.item.name.title()}' Added Successfully!")
         else:
             print(f"'{self.item.name.title()}' Already in Inventory...")
             add_another = "Would you like to add another?\nPlease enter 'y' or 'n': "
             if get_bool(add_another):
                 update_count(self.item.name, '+')
+                print(f"'{self.item.name.title()}' Added Successfully!")
             else:
-                print(f"'{self.item.name.title()}' was NOT added to the inventory")
+                print(f"'{self.item.name.title()}' was NOT added to the inventory...")
 
     def remove_item(self) -> None:
         # if there is more than one item, it will decrement the count by one
@@ -95,6 +111,56 @@ class ItemManager:
             full_inventory[self.item.name][9] = ('time in store', self.item.checked_out - self.item.checked_in)
 
 
+def create_item() -> Item:
+    # creating a new item from user input with helper functions
+    item_info = {
+        'name': None, 'category': None, 'item_count': None,
+        'price': None, 'weight': None, 'unit_of_measurement': None,
+        'purveyor': None, 'month_ordered': None}
+
+    while True:
+        for info in item_info:
+            if info in ['price', 'weight', 'item_count', 'month_ordered']:
+                item_info[info] = get_numeric_input(f"{info.upper()}: ",
+                                                    int if info in ['item_count', 'month_ordered'] else float)
+            elif info == 'unit_of_measurement':
+                item_info[info] = get_unit_of_measurement()
+            else:
+                item_info[info] = input(f'{info.upper()}: ').strip().lower()
+        # printing all users input for confirmation
+        for key, value in item_info.items():
+            print(f"{key}: {value}")
+
+        if get_bool("Is all the information above correct [y, n]? "):
+            break
+        else:
+            continue
+    # once confirmed we will instantiate an Item
+    new_item = Item(
+        name=item_info['name'], category=item_info['category'], item_count=item_info['item_count'],
+        price=item_info['price'], weight=item_info['weight'], unit_of_measurement=item_info['unit_of_measurement'],
+        purveyor=item_info['purveyor'], month_ordered=item_info['month_ordered'])
+
+    print(f"'{item_info['name'].upper()}' created successfully!")
+    return new_item
+
+
+# def remove_item(item_name: str) -> None:
+#     # if there is more than one item, it will decrement the count by one
+#     # if there is only one item, it will remove it from full inventory
+#     current_count = get_item_count(item_name)
+#     if item_name in full_inventory:
+#         if current_count > 1:
+#             update_count(item_name, '-')
+#             print(f"One '{item_name.upper()}' has been removed successfully!")
+#             print(f"{current_count - 1} in inventory...")
+#         else:
+#             del full_inventory[item_name]
+#             print(f"'{item_name.upper()}' has been removed successfully!")
+#     else:
+#         print(f"'{item_name.title()}' Not Found...")
+
+# TODO create InventoryManager class
 def get_inventory() -> str:
     # returns an inventory in string form
     inventory = ""
@@ -167,6 +233,7 @@ def get_items_by_order_month(order_month: int) -> list:
     return items
 
 
+# TODO create InventoryCalculations class
 def get_full_inventory_sum() -> float:
     # returns the total sum of all items in the inventory
     total: float = 0.00
@@ -250,3 +317,20 @@ def update_count(item_name, operator) -> None:
         new_count_set = ('item count', get_item_count(item_name) - 1)
         full_inventory[item_name].pop(1)
         full_inventory[item_name].insert(1, new_count_set)
+
+
+def get_numeric_input(prompt: str, expected_type: type) -> type:
+    while True:
+        user_input = input(prompt).strip()
+        if user_input.isnumeric():
+            if expected_type(float(user_input)):
+                return expected_type(user_input)
+        print("Invalid input. Please enter a valid numeric value.")
+
+
+def get_unit_of_measurement() -> str:
+    while True:
+        user_input = input("UNIT_OF_MEASUREMENT [kg, g, L or ml]: ").strip().lower()
+        if user_input in ['kg', 'g', 'l', 'ml']:
+            return user_input
+        print("Invalid input. Please enter a valid unit of measurement.")
