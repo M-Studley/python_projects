@@ -4,7 +4,6 @@ full_inventory = {}
 inventory_item_cache: list = []
 
 
-# TODO: purveyor, month_ordered, checked_in, checked_out & time_in_store all need to be in a separate class
 class Item:
     def __init__(self, *,
                  name: str,
@@ -16,7 +15,7 @@ class Item:
                  purveyor: str,
                  month_ordered: int,
                  checked_in: int = None,
-                 checked_out: int = None,):
+                 checked_out: int = None, ):
         self.name = name
         self.category = category
         self.item_count = item_count
@@ -58,15 +57,55 @@ class Item:
 
 @dataclass
 class ItemManager:
+    @staticmethod
+    def create_item() -> Item:
+        """ creating a new item from user input with helper functions
+            will also append the item into item_cache[] if an item inside does not share the same name and price"""
+        item_info = {
+            'name': None, 'category': None, 'item_count': None,
+            'price': None, 'weight': None, 'unit_of_measurement': None,
+            'purveyor': None, 'month_ordered': None}
+
+        while True:
+            for info in item_info:
+                if info in ['price', 'weight', 'item_count', 'month_ordered']:
+                    item_info[info] = get_numeric_input(f"{info.upper()}: ",
+                                                        int if info in ['item_count', 'month_ordered'] else float)
+                elif info == 'unit_of_measurement':
+                    item_info[info] = get_unit_of_measurement()
+                else:
+                    item_info[info] = input(f'{info.upper()}: ').strip().lower()
+            # printing all users input for confirmation
+            for key, value in item_info.items():
+                print(f"{key}: {value}")
+
+            if get_bool("Is all the information above correct [y, n]? "):
+                break
+            else:
+                continue
+
+        # once confirmed we will instantiate an Item
+        new_item = Item(
+            name=item_info['name'], category=item_info['category'], item_count=item_info['item_count'],
+            price=item_info['price'], weight=item_info['weight'], unit_of_measurement=item_info['unit_of_measurement'],
+            purveyor=item_info['purveyor'], month_ordered=item_info['month_ordered'])
+
+        # if no items inside item_cache, append.  if BOTH name and price match and item inside, DO NOT append
+        if not inventory_item_cache:
+            inventory_item_cache.append(new_item)
+        for item in inventory_item_cache:
+            if (new_item.name and new_item.price) != (item.name and item.price):
+                inventory_item_cache.append(new_item)
+
+        print(f"'{item_info['name'].upper()}' created successfully!")
+
+        return new_item
 
     @staticmethod
     def add_item(item: Item) -> None:
         """ Appends to the inventory cache if not already inside
         checks to see if the item being added is a duplicate (checked by item name) in full inventory
         if item exists it raises the counter of the original item """
-        if item not in inventory_item_cache:
-            inventory_item_cache.append(item)
-
         if item.name not in full_inventory:
             full_inventory.update(
                 {item.name: [('category', item.category),
@@ -101,7 +140,7 @@ class ItemManager:
             else:
                 del full_inventory[item_name]
         else:
-            print(f"'{item_name.title()}' Not Found...")
+            print(f"'{item_name}' Not Found...")
 
     @staticmethod
     def change_checked_in(item_name, day_of_year: int) -> None:
@@ -119,167 +158,135 @@ class ItemManager:
                                             full_inventory[item_name][8][1] - full_inventory[item_name][7][1])
 
 
-def create_item() -> Item:
-    """ creating a new item from user input with helper functions """
-    item_info = {
-        'name': None, 'category': None, 'item_count': None,
-        'price': None, 'weight': None, 'unit_of_measurement': None,
-        'purveyor': None, 'month_ordered': None}
+@dataclass
+class InventoryManager:
+    @staticmethod
+    def get_inventory() -> str:
+        """ returns an inventory in string form """
+        inventory = ""
+        for key, value in full_inventory.items():
+            inventory += f"{key.upper()}\n"
+            for tup in value:
+                inventory += f"{tup[0].title()}: {str(tup[1]).title()}\n"
+            inventory += '\n'
 
-    while True:
-        for info in item_info:
-            if info in ['price', 'weight', 'item_count', 'month_ordered']:
-                item_info[info] = get_numeric_input(f"{info.upper()}: ",
-                                                    int if info in ['item_count', 'month_ordered'] else float)
-            elif info == 'unit_of_measurement':
-                item_info[info] = get_unit_of_measurement()
-            else:
-                item_info[info] = input(f'{info.upper()}: ').strip().lower()
-        # printing all users input for confirmation
-        for key, value in item_info.items():
-            print(f"{key}: {value}")
+        return inventory
 
-        if get_bool("Is all the information above correct [y, n]? "):
-            break
-        else:
-            continue
+    @staticmethod
+    def get_categories() -> list:
+        """ returns a sorted list of all categories in the inventory """
+        category_set = set()
+        for value in full_inventory.values():
+            category_set.add(value[0][1])
 
-    # once confirmed we will instantiate an Item
-    new_item = Item(
-        name=item_info['name'], category=item_info['category'], item_count=item_info['item_count'],
-        price=item_info['price'], weight=item_info['weight'], unit_of_measurement=item_info['unit_of_measurement'],
-        purveyor=item_info['purveyor'], month_ordered=item_info['month_ordered'])
+        return sorted(category_set)
 
-    print(f"'{item_info['name'].upper()}' created successfully!")
+    @staticmethod
+    def get_purveyors() -> list:
+        """ returns a sorted list of all purveyors in the inventory """
+        category_set = set()
+        for value in full_inventory.values():
+            category_set.add(value[5][1])
 
-    return new_item
+        return sorted(category_set)
 
+    @staticmethod
+    def get_all_items() -> list:
+        """ returns all the items in the inventory, sorted """
+        all_items = []
+        for item in full_inventory:
+            [all_items.append(item) for _ in range(get_item_count(item))]
 
-# TODO create InventoryManager class
-def get_inventory() -> str:
-    """ returns an inventory in string form """
-    inventory = ""
-    for key, value in full_inventory.items():
-        inventory += f"{key.upper()}\n"
-        for tup in value:
-            inventory += f"{tup[0].title()}: {str(tup[1]).title()}\n"
-        inventory += '\n'
+        return sorted(all_items)
 
-    return inventory
+    @staticmethod
+    def get_items_in_category(category: str) -> list:
+        """ returns the items inside a given category """
+        items = []
+        for key, values in full_inventory.items():
+            for value in values:
+                if category in value:
+                    [items.append(key) for _ in range(get_item_count(key))]
 
+        return items
 
-def get_categories() -> list:
-    """ returns a sorted list of all categories in the inventory """
-    category_set = set()
-    for value in full_inventory.values():
-        category_set.add(value[0][1])
+    @staticmethod
+    def get_items_by_purveyor(purveyor):
+        """ returns the items inside a given purveyor """
+        items = []
+        for key, values in full_inventory.items():
+            for value in values:
+                if purveyor in value:
+                    [items.append(key) for _ in range(get_item_count(key))]
 
-    return sorted(category_set)
+        return items
 
+    @staticmethod
+    def get_items_by_order_month(order_month: int) -> list:
+        """ returns the items for a given order month """
+        items = []
+        for key, values in full_inventory.items():
+            for value in values:
+                if order_month in value:
+                    [items.append(key) for _ in range(get_item_count(key))]
 
-def get_purveyors() -> list:
-    """ returns a sorted list of all purveyors in the inventory """
-    category_set = set()
-    for value in full_inventory.values():
-        category_set.add(value[5][1])
-
-    return sorted(category_set)
-
-
-def get_all_items() -> list:
-    """ returns all the items in the inventory, sorted """
-    all_items = []
-    for item in full_inventory:
-        [all_items.append(item) for _ in range(get_item_count(item))]
-
-    return sorted(all_items)
-
-
-def get_items_in_category(category: str) -> list:
-    """ returns the items inside a given category """
-    items = []
-    for key, values in full_inventory.items():
-        for value in values:
-            if category in value:
-                [items.append(key) for _ in range(get_item_count(key))]
-
-    return items
+        return items
 
 
-def get_items_by_purveyor(purveyor):
-    """ returns the items inside a given purveyor """
-    items = []
-    for key, values in full_inventory.items():
-        for value in values:
-            if purveyor in value:
-                [items.append(key) for _ in range(get_item_count(key))]
+@dataclass
+class InventoryCalculator:
+    @staticmethod
+    def get_full_inventory_sum() -> float:
+        """ returns the total sum of all items in the inventory """
+        total: float = 0.00
+        for item in full_inventory:
+            total += (full_inventory[item][2][1] * get_item_count(item))
 
-    return items
+        return total
 
+    @staticmethod
+    def get_all_category_sum() -> dict:
+        """ returns a dictionary breakdown of all categories names and their sum """
+        category_totals = {}
+        [category_totals.update({category: 0}) for category in InventoryManager.get_categories()]
 
-def get_items_by_order_month(order_month: int) -> list:
-    """ returns the items for a given order month """
-    items = []
-    for key, values in full_inventory.items():
-        for value in values:
-            if order_month in value:
-                [items.append(key) for _ in range(get_item_count(key))]
+        for values in full_inventory.values():
+            category_totals[values[0][1]] += values[2][1] * values[1][1]
 
-    return items
+        return category_totals
 
+    @staticmethod
+    def get_category_sum(category) -> float:
+        """ returns the total amount in a specific category """
+        category_sum: float = 0.00
+        for values in full_inventory.values():
+            if values[0][1] == category:
+                print(values)
+                category_sum += values[2][1] * values[1][1]
 
-# TODO create InventoryCalculations class
-def get_full_inventory_sum() -> float:
-    """ returns the total sum of all items in the inventory """
-    total: float = 0.00
-    for item in full_inventory:
-        total += (full_inventory[item][2][1]*get_item_count(item))
+        return category_sum
 
-    return total
+    @staticmethod
+    def get_purveyor_sum(purveyor) -> float:
+        """ returns the total amount in a specific purveyor """
+        category_sum: float = 0.00
+        for values in full_inventory.values():
+            if values[5][1] == purveyor:
+                print(values)
+                category_sum += values[2][1] * values[1][1]
 
+        return category_sum
 
-def get_all_category_sum() -> dict:
-    """ returns a dictionary breakdown of all categories names and their sum """
-    category_totals = {}
-    [category_totals.update({category: 0}) for category in get_categories()]
+    @staticmethod
+    def get_order_month_sum(order_month) -> float:
+        """ returns the total amount in a specific order month """
+        category_sum: float = 0.00
+        for values in full_inventory.values():
+            if values[6][1] == order_month:
+                print(values)
+                category_sum += values[2][1] * values[1][1]
 
-    for values in full_inventory.values():
-        category_totals[values[0][1]] += values[2][1]*values[1][1]
-
-    return category_totals
-
-
-def get_category_sum(category) -> float:
-    """ returns the total amount in a specific category """
-    category_sum: float = 0.00
-    for values in full_inventory.values():
-        if values[0][1] == category:
-            print(values)
-            category_sum += values[2][1]*values[1][1]
-
-    return category_sum
-
-
-def get_purveyor_sum(purveyor) -> float:
-    """ returns the total amount in a specific purveyor """
-    category_sum: float = 0.00
-    for values in full_inventory.values():
-        if values[5][1] == purveyor:
-            print(values)
-            category_sum += values[2][1]*values[1][1]
-
-    return category_sum
-
-
-def get_order_month_sum(order_month) -> float:
-    """ returns the total amount in a specific order month """
-    category_sum: float = 0.00
-    for values in full_inventory.values():
-        if values[6][1] == order_month:
-            print(values)
-            category_sum += values[2][1]*values[1][1]
-
-    return category_sum
+        return category_sum
 
 
 '''---------------- HELPER FUNCTIONS ----------------'''
