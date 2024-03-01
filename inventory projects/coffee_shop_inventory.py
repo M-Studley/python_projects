@@ -1,292 +1,242 @@
 from dataclasses import dataclass
 
 full_inventory = {}
-inventory_item_cache: list = []
+item_cache: list = []
 
 
+@dataclass
 class Item:
-    def __init__(self, *,
-                 name: str,
-                 category: str,
-                 item_count: int,
-                 price: float,
-                 weight: float,
-                 unit_of_measurement: str,
-                 purveyor: str,
-                 month_ordered: int,
-                 checked_in: int = None,
-                 checked_out: int = None, ):
-        self.name = name
-        self.category = category
-        self.item_count = item_count
-        self.price = price
-        self.weight = weight
-        self.unit_of_measurement = unit_of_measurement
-        self.purveyor = purveyor
-        self.month_ordered = month_ordered
-        self.checked_in = checked_in
-        self.checked_out = checked_out
-        self.cost_by_weight: str = f"{round(self.price / self.weight, 2)} / {self.unit_of_measurement}"
-        self.time_in_store: str
-
-        # calculates the time in store if both checked_in and checked_out have values
-        if (self.checked_in and self.checked_out) is not None:
-            self.time_in_store = f"{self.checked_out - self.checked_in} days"
-        elif self.checked_out is None:
-            self.time_in_store = "Item has not been checked out..."
+    name: str
+    category: str
+    purveyor: str
+    item_count: int
+    price: float
+    weight: float
+    unit_of_measurement: str
+    checked_in: int
+    checked_out: int = None
+    time_in_store: str = None
+    cost_by_weight: str = None
 
     def __repr__(self) -> str:
         """returns all information on an item"""
         return "\n".join([f"{key.title()}: {str(value).title()}" for key, value in self.__dict__.items()])
 
 
-# TODO - build a class for menu items and their cost
-"""espresso = 10g of ground coffee = 30ml of liquid
-   espresso, double = 20g of ground coffee = 60ml of liquid
-   americano = 20g of ground coffee = 60ml of liquid
-   latte = 20g of ground coffee = 60ml of liquid, 300ml of milk, steamed
-   cappuccino = 20g of ground coffee = 60ml of liquid, 60ml of milk, steamed
-   flat white = 20g of ground coffee = 60ml of liquid, 120ml of milk, steamed
-   cafe noisette = 20g of ground coffee = 30ml of liquid, 120ml of milk, steamed
-   this will take in the ingredients      menu_item_1 = {'latte': {'coffee beans': 20g*cost_by_weight,
-                                                                       'milk (whole)': 300ml*cost_by_weight}}
-                                          menu_item_2 = {'cappuccino': {'coffee beans': 10g*cost_by_weight}}
-                                          menu_item_3 = {'espresso, single': {'coffee beans': 10g*cost_by_weight}}
-                                          menu_item_4 = {'espresso, double': {'coffee beans': 20g*cost_by_weight}}"""
+def create_item() -> Item:
+    """ creating a new item from user input with helper functions
+        will also append the item into item_cache[] if an item inside does not share the same name and price"""
+    item_info = {
+        'name': None, 'category': None, 'item_count': None,
+        'price': None, 'weight': None, 'unit_of_measurement': None,
+        'purveyor': None, 'checked_in': None, 'checked_out': None}
 
-
-@dataclass
-class ItemManager:
-    @staticmethod
-    def create_item() -> Item:
-        """ creating a new item from user input with helper functions
-            will also append the item into item_cache[] if an item inside does not share the same name and price"""
-        item_info = {
-            'name': None, 'category': None, 'item_count': None,
-            'price': None, 'weight': None, 'unit_of_measurement': None,
-            'purveyor': None, 'month_ordered': None}
-
-        while True:
-            for info in item_info:
-                if info in ['price', 'weight', 'item_count', 'month_ordered']:
-                    item_info[info] = get_numeric_input(f"{info.upper()}: ",
-                                                        int if info in ['item_count', 'month_ordered'] else float)
-                elif info == 'unit_of_measurement':
-                    item_info[info] = get_unit_of_measurement()
-                else:
-                    item_info[info] = input(f'{info.upper()}: ').strip().lower()
-            # printing all users input for confirmation
-            for key, value in item_info.items():
-                print(f"{key}: {value}")
-
-            if get_bool("Is all the information above correct [y, n]? "):
-                break
+    while True:
+        for info in item_info:
+            if info in ['price', 'weight', 'item_count', 'checked_in']:
+                item_info[info] = get_numeric_input(f"{info.upper()}: ",
+                                                    int if info in ['item_count', 'checked_in'] else float)
+            elif info == 'unit_of_measurement':
+                item_info[info] = get_unit_of_measurement()
+            elif info == 'checked_out':
+                item_info[info] = get_numeric_or_none_input(f"{info.upper()}: ")
             else:
-                continue
+                item_info[info] = get_string_input(f"{info.upper()}: ", str)
 
-        # once confirmed we will instantiate an Item
-        new_item = Item(
-            name=item_info['name'], category=item_info['category'], item_count=item_info['item_count'],
-            price=item_info['price'], weight=item_info['weight'], unit_of_measurement=item_info['unit_of_measurement'],
-            purveyor=item_info['purveyor'], month_ordered=item_info['month_ordered'])
+        # printing all users input for confirmation
+        for key, value in item_info.items():
+            print(f"{key}: {value}")
 
-        # if no items inside item_cache, append.  if BOTH name and price match and item inside, DO NOT append
-        if not inventory_item_cache:
-            inventory_item_cache.append(new_item)
-        for item in inventory_item_cache:
-            if (new_item.name and new_item.price) != (item.name and item.price):
-                inventory_item_cache.append(new_item)
-
-        print(f"'{item_info['name'].upper()}' created successfully!")
-
-        return new_item
-
-    @staticmethod
-    def add_item(item: Item) -> None:
-        """ Appends to the inventory cache if not already inside
-        checks to see if the item being added is a duplicate (checked by item name) in full inventory
-        if item exists it raises the counter of the original item """
-        if item.name not in full_inventory:
-            full_inventory.update(
-                {item.name: [('category', item.category),
-                             ('item count', item.item_count),
-                             ('price', item.price),
-                             ('weight', f'{item.weight} / {item.unit_of_measurement}'),
-                             (f'cost per {item.unit_of_measurement}', item.cost_by_weight),
-                             ('purveyor', item.purveyor),
-                             ('month ordered', item.month_ordered),
-                             ('checked in', item.checked_in),
-                             ('checked out', item.checked_out),
-                             ('time in store', item.time_in_store)]})
-
-            print(f"'{item.name.title()}' Added Successfully!")
+        if get_bool("Is all the information above correct [y, n]? "):
+            break
         else:
-            print(f"'{item.name.title()}' Already in Inventory...")
-            add_another = "Would you like to add another?\nPlease enter 'y' or 'n': "
-            if get_bool(add_another):
-                update_count(item.name, '+')
-                print(f"'{item.name.title()}' Added Successfully!")
-            else:
-                print(f"'{item.name.title()}' was NOT added to the inventory...")
+            continue
 
-    @staticmethod
-    def remove_item(item_name) -> None:
-        """ if there is more than one item, it will decrement the count by one
-        if there is only one item, it will remove it from full inventory """
-        current_count = get_item_count(item_name)
-        if item_name in full_inventory:
-            if current_count > 1:
-                update_count(item_name, '-')
-            else:
-                del full_inventory[item_name]
+    # checks for values to calculate time_in_store and cost_by_weight
+    if item_info['checked_out'] is not None:
+        time_in_store = f"{item_info['checked_out'] - item_info['checked_in']} days"
+    else:
+        time_in_store = None
+
+    cost_by_weight = f"{round(item_info['price'] / item_info['weight'], 2)} / {item_info['unit_of_measurement']}"
+    # once confirmed we will instantiate an Item
+    new_item = Item(
+        name=item_info['name'], category=item_info['category'], item_count=item_info['item_count'],
+        price=item_info['price'], weight=item_info['weight'], unit_of_measurement=item_info['unit_of_measurement'],
+        purveyor=item_info['purveyor'], checked_in=item_info['checked_in'], checked_out=item_info['checked_out'],
+        cost_by_weight=cost_by_weight, time_in_store=time_in_store)
+
+    # if no items inside item_cache, append.  if BOTH name and price match and item inside, DO NOT append
+    if not item_cache:
+        item_cache.append(new_item)
+    for item in item_cache:
+        if (new_item.name and new_item.price) != (item.name and item.price):
+            item_cache.append(new_item)
+
+    print(f"'{item_info['name'].upper()}' created successfully!")
+
+    return new_item
+
+
+# TODO full_inventory needs to not have sets but a dict of dicts
+def add_item(item: Item) -> None:
+    """ checks to see if the item being added is a duplicate (checked by item name) in full inventory
+    if item exists it raises the counter of the original item """
+    full_item_name = f'{item.name}, {item.weight}/{item.unit_of_measurement}'
+    if full_item_name not in full_inventory:
+        full_inventory.update({full_item_name: [
+            ('category', item.category),
+            ('item count', item.item_count),
+            ('price', item.price),
+            ('purveyor', item.purveyor),
+            ('checked in', item.checked_in),
+            ('checked out', item.checked_out),
+            ('time in store', item.time_in_store)]})
+
+        print(f"'{full_item_name.title()}' Added Successfully!")
+    else:
+        print(f"'{full_item_name.title()}' Already in Inventory...")
+        if get_bool("Would you like to add another?\nPlease enter 'y' or 'n': "):
+            update_count(full_item_name, '+')
+            print(f"'{full_item_name.title()}' Added Successfully!")
         else:
-            print(f"'{item_name}' Not Found...")
+            print(f"'{full_item_name.title()}' was NOT added to the inventory...")
 
-    @staticmethod
-    def change_checked_in(item_name, day_of_year: int) -> None:
-        """ changes the checked in day on both the object and the full inventory dict """
+
+def remove_item(item_name: str) -> None:
+    """ if there is more than one item, it will decrement the count by one
+    if there is only one item, it will remove it from full inventory """
+    current_count = get_item_count(item_name)
+    if item_name in full_inventory:
+        if current_count > 1:
+            update_count(item_name, '-')
+        else:
+            del full_inventory[item_name]
+    else:
+        print(f"'{item_name}' Not Found...")
+
+
+def _change_checked_in(item_name: str, day_of_year: int) -> None:
+    """ changes the checked in day for the full inventory dict """
+    current_day = full_inventory[item_name][6][1]
+    if get_bool(f"Are you sure you would like to change the checked in day of {current_day} [y, n]? "):
         if isinstance(day_of_year, int) and day_of_year in range(1, 367):
-            full_inventory[item_name][7] = ('checked in', day_of_year)
-
-    @staticmethod
-    def change_checked_out(item_name, day_of_year: int) -> None:
-        """ changes the checked out day in the full inventory dict
-        also updates the time_in_store in the full inventory dict """
-        if isinstance(day_of_year, int) and day_of_year in range(1, 367):
-            full_inventory[item_name][8] = ('checked out', day_of_year)
-            full_inventory[item_name][9] = ('time in store',
-                                            full_inventory[item_name][8][1] - full_inventory[item_name][7][1])
+            full_inventory[item_name][6] = ('checked in', day_of_year)
+            print("Checked in day successfully updated!")
+    else:
+        print("Checked in day NOT CHANGED...")
 
 
-@dataclass
-class InventoryManager:
-    @staticmethod
-    def get_inventory() -> str:
-        """ returns an inventory in string form """
-        inventory = ""
-        for key, value in full_inventory.items():
-            inventory += f"{key.upper()}\n"
-            for tup in value:
-                inventory += f"{tup[0].title()}: {str(tup[1]).title()}\n"
-            inventory += '\n'
-
-        return inventory
-
-    @staticmethod
-    def get_categories() -> list:
-        """ returns a sorted list of all categories in the inventory """
-        category_set = set()
-        for value in full_inventory.values():
-            category_set.add(value[0][1])
-
-        return sorted(category_set)
-
-    @staticmethod
-    def get_purveyors() -> list:
-        """ returns a sorted list of all purveyors in the inventory """
-        category_set = set()
-        for value in full_inventory.values():
-            category_set.add(value[5][1])
-
-        return sorted(category_set)
-
-    @staticmethod
-    def get_all_items() -> list:
-        """ returns all the items in the inventory, sorted """
-        all_items = []
-        for item in full_inventory:
-            [all_items.append(item) for _ in range(get_item_count(item))]
-
-        return sorted(all_items)
-
-    @staticmethod
-    def get_items_in_category(category: str) -> list:
-        """ returns the items inside a given category """
-        items = []
-        for key, values in full_inventory.items():
-            for value in values:
-                if category in value:
-                    [items.append(key) for _ in range(get_item_count(key))]
-
-        return items
-
-    @staticmethod
-    def get_items_by_purveyor(purveyor):
-        """ returns the items inside a given purveyor """
-        items = []
-        for key, values in full_inventory.items():
-            for value in values:
-                if purveyor in value:
-                    [items.append(key) for _ in range(get_item_count(key))]
-
-        return items
-
-    @staticmethod
-    def get_items_by_order_month(order_month: int) -> list:
-        """ returns the items for a given order month """
-        items = []
-        for key, values in full_inventory.items():
-            for value in values:
-                if order_month in value:
-                    [items.append(key) for _ in range(get_item_count(key))]
-
-        return items
+def change_checked_out(item_name: str, day_of_year: int) -> None:
+    """ changes the checked out day in the full inventory dict
+    also updates the time_in_store in the full inventory dict """
+    if isinstance(day_of_year, int) and day_of_year in range(1, 367):
+        full_inventory[item_name][5] = ('checked out', day_of_year)
+        full_inventory[item_name][6] = ('time in store',
+                                        full_inventory[item_name][5][1] - full_inventory[item_name][4][1])
 
 
-@dataclass
-class InventoryCalculator:
-    @staticmethod
-    def get_full_inventory_sum() -> float:
-        """ returns the total sum of all items in the inventory """
-        total: float = 0.00
-        for item in full_inventory:
-            total += (full_inventory[item][2][1] * get_item_count(item))
+def get_inventory() -> str:
+    """ returns an inventory in string form """
+    inventory = ""
+    for key, value in full_inventory.items():
+        inventory += f"{key.upper()}\n"
+        for tup in value:
+            inventory += f"{tup[0].title()}: {str(tup[1]).title()}\n"
+        inventory += '\n'
 
-        return total
+    return inventory
 
-    @staticmethod
-    def get_all_category_sum() -> dict:
-        """ returns a dictionary breakdown of all categories names and their sum """
-        category_totals = {}
-        [category_totals.update({category: 0}) for category in InventoryManager.get_categories()]
 
-        for values in full_inventory.values():
-            category_totals[values[0][1]] += values[2][1] * values[1][1]
+def get_categories() -> list:
+    """ returns a sorted list of all categories in the inventory """
+    category_set = set()
+    for value in full_inventory.values():
+        category_set.add(value[0][1])
 
-        return category_totals
+    return sorted(category_set)
 
-    @staticmethod
-    def get_category_sum(category) -> float:
-        """ returns the total amount in a specific category """
-        category_sum: float = 0.00
-        for values in full_inventory.values():
-            if values[0][1] == category:
-                print(values)
-                category_sum += values[2][1] * values[1][1]
 
-        return category_sum
+def get_purveyors() -> list:
+    """ returns a sorted list of all purveyors in the inventory """
+    category_set = set()
+    for value in full_inventory.values():
+        category_set.add(value[5][1])
 
-    @staticmethod
-    def get_purveyor_sum(purveyor) -> float:
-        """ returns the total amount in a specific purveyor """
-        category_sum: float = 0.00
-        for values in full_inventory.values():
-            if values[5][1] == purveyor:
-                print(values)
-                category_sum += values[2][1] * values[1][1]
+    return sorted(category_set)
 
-        return category_sum
 
-    @staticmethod
-    def get_order_month_sum(order_month) -> float:
-        """ returns the total amount in a specific order month """
-        category_sum: float = 0.00
-        for values in full_inventory.values():
-            if values[6][1] == order_month:
-                print(values)
-                category_sum += values[2][1] * values[1][1]
+def get_all_items() -> list:
+    """ returns all the items in the inventory, sorted """
+    all_items = []
+    for item in full_inventory:
+        [all_items.append(item) for _ in range(get_item_count(item))]
 
-        return category_sum
+    return sorted(all_items)
+
+
+def get_items_in_category(category: str) -> list:
+    """ returns the items inside a given category """
+    items = []
+    for key, values in full_inventory.items():
+        for value in values:
+            if category in value:
+                [items.append(key) for _ in range(get_item_count(key))]
+
+    return items
+
+
+def get_items_by_purveyor(purveyor: str):
+    """ returns the items inside a given purveyor """
+    items = []
+    for key, values in full_inventory.items():
+        for value in values:
+            if purveyor in value:
+                [items.append(key) for _ in range(get_item_count(key))]
+
+    return items
+
+
+def get_full_inventory_sum() -> float:
+    """ returns the total sum of all items in the inventory """
+    total: float = 0.00
+    for item in full_inventory:
+        total += (full_inventory[item][2][1] * get_item_count(item))
+
+    return total
+
+
+def get_all_category_sum() -> dict:
+    """ returns a dictionary breakdown of all categories names and their sum """
+    category_totals = {}
+    [category_totals.update({category: 0}) for category in get_categories()]
+
+    for values in full_inventory.values():
+        category_totals[values[0][1]] += values[2][1] * values[1][1]
+
+    return category_totals
+
+
+def get_category_sum(category: str) -> float:
+    """ returns the total amount in a specific category """
+    category_sum: float = 0.00
+    for values in full_inventory.values():
+        if values[0][1] == category:
+            print(values)
+            category_sum += values[2][1] * values[1][1]
+
+    return category_sum
+
+
+def get_purveyor_sum(purveyor: str) -> float:
+    """ returns the total amount in a specific purveyor """
+    category_sum: float = 0.00
+    for values in full_inventory.values():
+        if values[5][1] == purveyor:
+            print(values)
+            category_sum += values[2][1] * values[1][1]
+
+    return category_sum
 
 
 '''---------------- HELPER FUNCTIONS ----------------'''
@@ -321,13 +271,34 @@ def update_count(item_name, operator) -> None:
         full_inventory[item_name].insert(1, new_count_set)
 
 
+def get_string_input(prompt: str, expected_type: type):
+    """ prompts user for input and returns it with the specified type """
+    while True:
+        user_input = input(prompt).strip().lower()
+        if len(user_input) > 0:
+            return expected_type(user_input)
+        print("Please enter a valid input...")
+
+
 def get_numeric_input(prompt: str, expected_type: type) -> type:
     """ prompts user for numeric input and returns it with the specified type """
     while True:
         user_input = input(prompt).strip()
-        if round(float(user_input)).is_integer():
+        if len(user_input) > 0 and round(float(user_input)).is_integer():
             if expected_type(float(user_input)):
                 return expected_type(user_input)
+        print("Invalid input. Please enter a valid numeric value.")
+
+
+def get_numeric_or_none_input(prompt: str) -> int or None:
+    """ prompts user for numeric input and returns it with the specified type """
+    while True:
+        user_input = input(prompt).strip()
+        if len(user_input) == 0:
+            return None
+        elif user_input.isnumeric():
+            return int(user_input)
+
         print("Invalid input. Please enter a valid numeric value.")
 
 
