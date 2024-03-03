@@ -1,4 +1,5 @@
 from coffee_shop_inventory import *
+from coffee_shop_inventory import _change_checked_in
 
 # ---------------- TESTING OBJECT ---------------- #
 
@@ -11,17 +12,6 @@ test_item = Item(
     weight=99,
     unit_of_measurement='test unit',
     checked_in=40)
-name: str
-category: str
-purveyor: str
-item_count: int
-price: float
-weight: float
-unit_of_measurement: str
-checked_in: int
-checked_out: int
-time_in_store: str
-cost_by_weight: str
 
 # ItemManager.add_item(test_item)
 
@@ -175,7 +165,7 @@ add_item(egg_tart)
 # ---------------- WATER ---------------- #
 
 singha_water_750ml = Item(
-    name='singha bottled water (750ml)',
+    name='singha bottled water 750ml',
     category='water',
     purveyor='makro',
     item_count=1,
@@ -185,7 +175,7 @@ singha_water_750ml = Item(
     checked_in=40)
 
 singha_water_1000ml = Item(
-    name='singha bottled water (1L)',
+    name='singha bottled water 1000ml',
     category='water',
     purveyor='makro',
     item_count=1,
@@ -206,27 +196,27 @@ add_item(singha_water_1000ml)
 # print()
 # print(full_inventory)
 # print()
-# ItemManager.add_item(lavazza_dark_roast)
-# print(full_inventory['lavazza dark roast'])
+# add_item(lavazza_dark_roast)
+# print(full_inventory['lavazza dark roast, 1000/g'])
 
 
 '''REMOVE_ITEM() TESTING...'''
 #
 '''SUCCESSFUL'''
 # print()
-# print(full_inventory['lavazza dark roast'])
+# print(full_inventory['lavazza dark roast, 1000/g'])
 # print()
-# ItemManager.remove_item('lavazza dark roast')
-# print(full_inventory['lavazza dark roast'])
+# remove_item('lavazza dark roast, 1000/g')
+# print(full_inventory)
 # print()
 # print("\n" + get_inventory())
 #
 '''UNSUCCESSFUL'''
 # print()
-# ItemManager().remove_item('test_item')
+# remove_item('test_item')
 
 
-'''NO CHECKED_IN OR CHECKED_OUT TESTING...'''
+'''NO CHECKED_OUT TESTING...'''
 #
 # print()
 # print(lavazza_medium_roast)
@@ -235,60 +225,66 @@ add_item(singha_water_1000ml)
 '''CHANGE_CHECKED_IN TESTING...'''
 #
 # print()
-# print("singha 1000 (BEFORE):", full_inventory['singha bottled water (1L)'])
+# print("singha 1000 (BEFORE):", full_inventory['singha bottled water 750ml, 12/piece'])
 # print()
-# ItemManager._change_checked_in('singha bottled water (1L)', 49)
+# _change_checked_in('singha bottled water 750ml, 12/piece', 49)
 # print()
-# print("singha 1000 (AFTER):", full_inventory['singha bottled water (1L)'])
+# print("singha 1000 (AFTER):", full_inventory['singha bottled water 750ml, 12/piece'])
 
 
 '''CHANGE_CHECKED_OUT TESTING...'''
 #
+"""SUCCESSFUL"""
 # print()
-# print("singha 1000:", singha_water_1000ml)
+# print("singha 1000 (BEFORE):", full_inventory['singha bottled water 750ml, 12/piece'])
 # print()
-# print("full inventory:", full_inventory)
+# change_checked_out('singha bottled water 750ml, 12/piece', 49)
 # print()
-# ItemManager.change_checked_out('singha bottled water (1L)', 59)
-# print("singha 1000:", singha_water_1000ml)
+# print("singha 1000 (AFTER):", full_inventory['singha bottled water 750ml, 12/piece'])
+#
+"""UNSUCCESSFUL"""
 # print()
-# print("full inventory:", full_inventory)
+# print("singha 1000 (BEFORE):", full_inventory['singha bottled water 750ml, 12/piece'])
+# print()
+# change_checked_out('singha bottled water 750ml, 12/piece', 39)
+# print()
+# print("singha 1000 (AFTER):", full_inventory['singha bottled water 750ml, 12/piece'])
 
 
 '''GET_INVENTORY() TESTING...'''
-
+#
 # print()
-# print(InventoryManager.get_inventory())
+# print(get_inventory())
 
 
 '''GET_CATEGORIES() TESTING...'''
 #
 # print()
-# print(InventoryManager.get_categories())
+# print(get_categories())
 
 
 '''GET_PURVEYORS() TESTING...'''
 #
 # print()
-# print(InventoryManager.get_purveyors())
+# print(get_purveyors())
 
 
 '''GET_ALL_ITEMS() TESTING...'''
 #
 # print()
-# print(InventoryManager.get_all_items())
-# print(len(InventoryManager.get_all_items()))\
+# print(get_all_items())
+# print(len(get_all_items()))
 
 
 '''GET_ITEMS_IN_CATEGORY() TESTING...'''
-#
-'''SUCCESSFUL'''
+# #
+# '''SUCCESSFUL'''
 # print()
-# print(InventoryManager.get_items_in_category('coffee beans'))
+# print(get_items_in_category('coffee beans'))
 
 '''UNSUCCESSFUL'''
 # print()
-# print(InventoryManager.get_items_in_category('test category'))
+# print(get_items_in_category('test category'))
 
 
 '''GET_ITEMS_BY_PURVEYOR() TESTING...'''
@@ -305,7 +301,7 @@ add_item(singha_water_1000ml)
 '''GET_ITEM_COUNT() TESTING'''
 #
 # print()
-# print(get_item_count('lavazza dark roast'))
+# print(get_item_count('lavazza dark roast, 1000/g'))
 
 
 '''GET_FULL_INVENTORY_SUM() TESTING...'''
