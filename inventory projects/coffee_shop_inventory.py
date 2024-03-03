@@ -78,20 +78,19 @@ def create_item() -> Item:
     return new_item
 
 
-# TODO full_inventory needs to not have sets but a dict of dicts
 def add_item(item: Item) -> None:
     """ checks to see if the item being added is a duplicate (checked by item name) in full inventory
     if item exists it raises the counter of the original item """
     full_item_name = f'{item.name}, {item.weight}/{item.unit_of_measurement}'
     if full_item_name not in full_inventory:
-        full_inventory.update({full_item_name: [
-            ('category', item.category),
-            ('item count', item.item_count),
-            ('price', item.price),
-            ('purveyor', item.purveyor),
-            ('checked in', item.checked_in),
-            ('checked out', item.checked_out),
-            ('time in store', item.time_in_store)]})
+        full_inventory.update({full_item_name: {
+            'category': item.category,
+            'item count': item.item_count,
+            'price': item.price,
+            'purveyor': item.purveyor,
+            'checked in': item.checked_in,
+            'checked out': item.checked_out,
+            'time in store': item.time_in_store}})
 
         print(f"'{full_item_name.title()}' Added Successfully!")
     else:
@@ -106,9 +105,8 @@ def add_item(item: Item) -> None:
 def remove_item(item_name: str) -> None:
     """ if there is more than one item, it will decrement the count by one
     if there is only one item, it will remove it from full inventory """
-    current_count = get_item_count(item_name)
     if item_name in full_inventory:
-        if current_count > 1:
+        if get_item_count(item_name) > 1:
             update_count(item_name, '-')
         else:
             del full_inventory[item_name]
@@ -118,10 +116,10 @@ def remove_item(item_name: str) -> None:
 
 def _change_checked_in(item_name: str, day_of_year: int) -> None:
     """ changes the checked in day for the full inventory dict """
-    current_day = full_inventory[item_name][6][1]
+    current_day = full_inventory[item_name]['checked in']
     if get_bool(f"Are you sure you would like to change the checked in day of {current_day} [y, n]? "):
         if isinstance(day_of_year, int) and day_of_year in range(1, 367):
-            full_inventory[item_name][6] = ('checked in', day_of_year)
+            full_inventory[item_name]['checked in'] = day_of_year
             print("Checked in day successfully updated!")
     else:
         print("Checked in day NOT CHANGED...")
@@ -131,9 +129,12 @@ def change_checked_out(item_name: str, day_of_year: int) -> None:
     """ changes the checked out day in the full inventory dict
     also updates the time_in_store in the full inventory dict """
     if isinstance(day_of_year, int) and day_of_year in range(1, 367):
-        full_inventory[item_name][5] = ('checked out', day_of_year)
-        full_inventory[item_name][6] = ('time in store',
-                                        full_inventory[item_name][5][1] - full_inventory[item_name][4][1])
+        if day_of_year < full_inventory[item_name]['checked in']:
+            print(f"{day_of_year} is before the check in date ({full_inventory[item_name]['checked in']})...")
+        else:
+            full_inventory[item_name]['checked out'] = day_of_year
+            full_inventory[item_name]['time in store'] = (
+                    full_inventory[item_name]['checked out'] - full_inventory[item_name]['checked in'])
 
 
 def get_inventory() -> str:
@@ -141,9 +142,9 @@ def get_inventory() -> str:
     inventory = ""
     for key, value in full_inventory.items():
         inventory += f"{key.upper()}\n"
-        for tup in value:
-            inventory += f"{tup[0].title()}: {str(tup[1]).title()}\n"
-        inventory += '\n'
+        for sub_key, sub_value in value.items():
+            inventory += f"{sub_key.upper()}: {str(sub_value).title()}\n"
+        inventory += "\n"
 
     return inventory
 
@@ -152,7 +153,9 @@ def get_categories() -> list:
     """ returns a sorted list of all categories in the inventory """
     category_set = set()
     for value in full_inventory.values():
-        category_set.add(value[0][1])
+        for sub_key, sub_value in value.items():
+            if sub_key == 'category':
+                category_set.add(sub_value)
 
     return sorted(category_set)
 
@@ -161,7 +164,9 @@ def get_purveyors() -> list:
     """ returns a sorted list of all purveyors in the inventory """
     category_set = set()
     for value in full_inventory.values():
-        category_set.add(value[5][1])
+        for sub_key, sub_value in value.items():
+            if sub_key == 'purveyor':
+                category_set.add(sub_value)
 
     return sorted(category_set)
 
@@ -176,24 +181,26 @@ def get_all_items() -> list:
 
 
 def get_items_in_category(category: str) -> list:
-    """ returns the items inside a given category """
+    """ returns the items inside a given category, if no items [None] will be returned """
     items = []
-    for key, values in full_inventory.items():
-        for value in values:
-            if category in value:
+    for key, value in full_inventory.items():
+        for sub_value in value.values():
+            if category == sub_value:
                 [items.append(key) for _ in range(get_item_count(key))]
-
+    if not items:
+        items.append(None)
     return items
 
 
 def get_items_by_purveyor(purveyor: str):
-    """ returns the items inside a given purveyor """
+    """ returns the items inside a given purveyor, if no items [None] will be returned """
     items = []
-    for key, values in full_inventory.items():
-        for value in values:
-            if purveyor in value:
+    for key, value in full_inventory.items():
+        for sub_value in value.values():
+            if purveyor == sub_value:
                 [items.append(key) for _ in range(get_item_count(key))]
-
+    if not items:
+        items.append(None)
     return items
 
 
@@ -201,7 +208,7 @@ def get_full_inventory_sum() -> float:
     """ returns the total sum of all items in the inventory """
     total: float = 0.00
     for item in full_inventory:
-        total += (full_inventory[item][2][1] * get_item_count(item))
+        total += (full_inventory[item]['price'] * get_item_count(item))
 
     return total
 
@@ -211,8 +218,11 @@ def get_all_category_sum() -> dict:
     category_totals = {}
     [category_totals.update({category: 0}) for category in get_categories()]
 
-    for values in full_inventory.values():
-        category_totals[values[0][1]] += values[2][1] * values[1][1]
+    for key, values in full_inventory.items():
+        for sub_value in values.values():
+            for value in category_totals:
+                if value == sub_value:
+                    category_totals[value] += full_inventory[key]['price'] * full_inventory[key]['item count']
 
     return category_totals
 
@@ -220,10 +230,10 @@ def get_all_category_sum() -> dict:
 def get_category_sum(category: str) -> float:
     """ returns the total amount in a specific category """
     category_sum: float = 0.00
-    for values in full_inventory.values():
-        if values[0][1] == category:
-            print(values)
-            category_sum += values[2][1] * values[1][1]
+    for key, value in full_inventory.items():
+        for sub_value in value.values():
+            if sub_value == category:
+                category_sum += full_inventory[key]['price'] * full_inventory[key]['item count']
 
     return category_sum
 
@@ -231,10 +241,10 @@ def get_category_sum(category: str) -> float:
 def get_purveyor_sum(purveyor: str) -> float:
     """ returns the total amount in a specific purveyor """
     category_sum: float = 0.00
-    for values in full_inventory.values():
-        if values[5][1] == purveyor:
-            print(values)
-            category_sum += values[2][1] * values[1][1]
+    for key, value in full_inventory.items():
+        for sub_value in value.values():
+            if sub_value == purveyor:
+                category_sum += full_inventory[key]['price'] * full_inventory[key]['item count']
 
     return category_sum
 
@@ -254,7 +264,7 @@ def get_bool(bool_inquery) -> bool:
 def get_item_count(item_name) -> int:
     """ helper function to get the current item count """
     if item_name in full_inventory:
-        return full_inventory[item_name][1][1]
+        return full_inventory[item_name]['item count']
     else:
         return 0
 
@@ -262,13 +272,9 @@ def get_item_count(item_name) -> int:
 def update_count(item_name, operator) -> None:
     """ helper function that pops the tuple out and inserts tuple with updated count """
     if operator == '+':
-        new_count_set = ('item count', get_item_count(item_name) + 1)
-        full_inventory[item_name].pop(1)
-        full_inventory[item_name].insert(1, new_count_set)
+        full_inventory[item_name]['item count'] += 1
     else:
-        new_count_set = ('item count', get_item_count(item_name) - 1)
-        full_inventory[item_name].pop(1)
-        full_inventory[item_name].insert(1, new_count_set)
+        full_inventory[item_name]['item count'] -= 1
 
 
 def get_string_input(prompt: str, expected_type: type):
