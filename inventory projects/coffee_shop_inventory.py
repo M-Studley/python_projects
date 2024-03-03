@@ -24,27 +24,28 @@ class Item:
 
 
 def create_item() -> Item:
-    """ creating a new item from user input with helper functions
-        will also append the item into item_cache[] if an item inside does not share the same name and price"""
-    item_info = {
-        'name': None, 'category': None, 'item_count': None,
-        'price': None, 'weight': None, 'unit_of_measurement': None,
-        'purveyor': None, 'checked_in': None, 'checked_out': None}
+    """Creating a new item from user input with helper functions.
+    Will also append the item into item_cache[] if an item inside does not share the same name and price."""
+
+    attribute_list: list = ['name', 'category', 'item_count', 'price', 'weight', 'unit_of_measurement',
+                            'purveyor', 'checked_in', 'checked_out']
+
+    new_item_attributes: dict = {}
 
     while True:
-        for info in item_info:
-            if info in ['price', 'weight', 'item_count', 'checked_in']:
-                item_info[info] = get_numeric_input(f"{info.upper()}: ",
-                                                    int if info in ['item_count', 'checked_in'] else float)
-            elif info == 'unit_of_measurement':
-                item_info[info] = get_unit_of_measurement()
-            elif info == 'checked_out':
-                item_info[info] = get_numeric_or_none_input(f"{info.upper()}: ")
+        for attribute in attribute_list:
+            if attribute in ['price', 'weight', 'item_count', 'checked_in']:
+                new_item_attributes[attribute] = get_numeric_input(
+                    f"{attribute.upper()}: ", int if attribute in ['item_count', 'checked_in'] else float)
+            elif attribute == 'unit_of_measurement':
+                new_item_attributes[attribute] = get_unit_of_measurement()
+            elif attribute == 'checked_out':
+                new_item_attributes[attribute] = get_numeric_or_none_input(f"{attribute.upper()}: ")
             else:
-                item_info[info] = get_string_input(f"{info.upper()}: ", str)
+                new_item_attributes[attribute] = get_string_input(f"{attribute.upper()}: ", str)
 
-        # printing all users input for confirmation
-        for key, value in item_info.items():
+        # Print all user's input for confirmation
+        for key, value in new_item_attributes.items():
             print(f"{key}: {value}")
 
         if get_bool("Is all the information above correct [y, n]? "):
@@ -52,28 +53,20 @@ def create_item() -> Item:
         else:
             continue
 
-    # checks for values to calculate time_in_store and cost_by_weight
-    if item_info['checked_out'] is not None:
-        time_in_store = f"{item_info['checked_out'] - item_info['checked_in']} days"
-    else:
-        time_in_store = None
+    # Check for values to calculate time_in_store and cost_by_weight
+    time_in_store = f"{new_item_attributes['checked_out'] - new_item_attributes['checked_in']} days" \
+        if new_item_attributes['checked_out'] is not None else None
+    cost_by_weight = (f"{round(new_item_attributes['price'] / new_item_attributes['weight'], 2)}"
+                      f" / {new_item_attributes['unit_of_measurement']}")
 
-    cost_by_weight = f"{round(item_info['price'] / item_info['weight'], 2)} / {item_info['unit_of_measurement']}"
-    # once confirmed we will instantiate an Item
-    new_item = Item(
-        name=item_info['name'], category=item_info['category'], item_count=item_info['item_count'],
-        price=item_info['price'], weight=item_info['weight'], unit_of_measurement=item_info['unit_of_measurement'],
-        purveyor=item_info['purveyor'], checked_in=item_info['checked_in'], checked_out=item_info['checked_out'],
-        cost_by_weight=cost_by_weight, time_in_store=time_in_store)
+    # Once confirmed, instantiate an Item
+    new_item = Item(**new_item_attributes, cost_by_weight=cost_by_weight, time_in_store=time_in_store)
 
-    # if no items inside item_cache, append.  if BOTH name and price match and item inside, DO NOT append
-    if not item_cache:
+    # Check for duplicates in item_cache
+    if not any(item.name == new_item.name and item.price == new_item.price for item in item_cache):
         item_cache.append(new_item)
-    for item in item_cache:
-        if (new_item.name and new_item.price) != (item.name and item.price):
-            item_cache.append(new_item)
 
-    print(f"'{item_info['name'].upper()}' created successfully!")
+    print(f"'{new_item.name.upper()}' created successfully!")
 
     return new_item
 
